@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Nutrient, Ingredient, IngredientNutrientLink, PersonProfile, MealComponent, IngredientUsage, MealPlan
+from .models import Nutrient, Ingredient, IngredientNutrientLink, PersonProfile, MealComponent, IngredientUsage, MealPlan, FoodPortion, DietaryReferenceValue
 
 class NutrientSerializer(serializers.ModelSerializer):
     default_rda = serializers.SerializerMethodField()
@@ -122,19 +122,61 @@ class MealComponentSerializer(serializers.ModelSerializer):
         return instance
 
 class MealPlanSerializer(serializers.ModelSerializer):
-    # To show names or more details instead of just IDs for M2M fields:
+    plan_nutritional_totals = serializers.SerializerMethodField()
+    plan_nutritional_targets_detail = serializers.SerializerMethodField(read_only=True)
+    # For M2M fields like target_people_profiles and meal_components,
+    # DRF handles them by default with PrimaryKeyRelatedField for write operations.
+    # For read operations, you might want to use a nested serializer or StringRelatedField.
+    # For now, default handling is fine, frontend will likely send IDs.
+
+    # To allow writing people and components by ID when creating/updating a MealPlan:
+    target_people_ids = serializers.PrimaryKeyRelatedField(
+        queryset=PersonProfile.objects.all(),
+        source='target_people_profiles',
+        many=True,
+        write_only=True, # Only for writing, reading uses target_people_profiles (default or custom depth)
+        required=False # Depending on if it's mandatory
+    )
+    meal_component_ids = serializers.PrimaryKeyRelatedField(
+        queryset=MealComponent.objects.all(),
+        source='meal_components',
+        many=True,
+        write_only=True,
+        required=False
+    )
+
+    # If you want to see the full profile objects on read, not just IDs:
     target_people_profiles_detail = PersonProfileSerializer(source='target_people_profiles', many=True, read_only=True)
+    # If you want to see the full component objects on read:
     meal_components_detail = MealComponentSerializer(source='meal_components', many=True, read_only=True)
 
     class Meta:
         model = MealPlan
-        fields = ['id', 'name', 'description', 'duration_days', 
-                  'target_people_profiles', 'target_people_profiles_detail',
-                  'meal_components', 'meal_components_detail',
-                  'servings_per_day_per_person', 'notes', 
-                  'creation_date', 'last_modified_date']
-        # For writing, just target_people_profiles and meal_components (which expect PKs) are fine.
-        # The _detail fields are read-only expansions. 
+        fields = [
+            'id', 'name', 'description', 'duration_days', 
+            'target_people_profiles', 'target_people_profiles_detail', 'target_people_ids', # For read (detail) and write (ids)
+            'meal_components', 'meal_components_detail', 'meal_component_ids', # For read (detail) and write (ids)
+            'servings_per_day_per_person', 'notes',
+            'creation_date', 'last_modified_date',
+            'plan_nutritional_totals', 'plan_nutritional_targets_detail'
+        ]
+        # read_only_fields = ['plan_nutritional_totals'] # This is fetched by get_plan_nutritional_totals method
+
+    def get_plan_nutritional_totals(self, obj):
+        return obj.get_plan_nutritional_totals()
+    
+    def get_plan_nutritional_targets_detail(self, obj):
+        return obj.get_plan_nutritional_targets()
+
+class FoodPortionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FoodPortion
+        fields = '__all__' # Or list specific fields
+
+class DietaryReferenceValueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DietaryReferenceValue
+        fields = '__all__'
 
 class IngredientSearchSerializer(serializers.ModelSerializer):
     class Meta:

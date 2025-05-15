@@ -5,6 +5,30 @@ from django.utils import timezone
 from django.contrib.auth.models import User # For potential future user links
 from collections import defaultdict
 
+# --- Helper function for PersonProfile default nutrient targets ---
+def get_default_nutrient_targets():
+    # This function is called when a new PersonProfile is created.
+    # It attempts to find common nutrients (Energy, Protein) and set default targets.
+    # In a production system, you might want to ensure these nutrients exist
+    # or handle cases where they don't more gracefully (e.g., during post_migrate signal).
+    defaults = {}
+    try:
+        # Attempt to get the standard unit for Energy (Calories)
+        energy_nutrient = Nutrient.objects.filter(name__iexact='Energy').first() or \
+                          Nutrient.objects.filter(name__iexact='Calories').first()
+        energy_unit = energy_nutrient.unit if energy_nutrient else 'kcal'
+        defaults["Energy"] = {"target": 2000, "unit": energy_unit, "is_override": True}
+    except Exception: # Catch broader errors if Nutrient table isn't populated yet during migrations
+        defaults["Energy"] = {"target": 2000, "unit": "kcal", "is_override": True} # Fallback
+
+    try:
+        protein_nutrient = Nutrient.objects.filter(name__iexact='Protein').first()
+        protein_unit = protein_nutrient.unit if protein_nutrient else 'g'
+        defaults["Protein"] = {"target": 75, "unit": protein_unit, "is_override": True}
+    except Exception:
+        defaults["Protein"] = {"target": 75, "unit": "g", "is_override": True} # Fallback
+    return defaults
+
 # --- Enums as Django Choices --- 
 
 class NutrientCategory(models.TextChoices):
@@ -157,17 +181,84 @@ class PersonProfile(models.Model):
     weight_kg = models.FloatField(blank=True, null=True, validators=[MinValueValidator(0)])
     height_cm = models.FloatField(blank=True, null=True, validators=[MinValueValidator(0)])
     activity_level = models.CharField(max_length=20, choices=ActivityLevel.choices, blank=True, null=True)
-    target_calories_override = models.PositiveIntegerField(blank=True, null=True, help_text='Manually set daily calorie goal, overrides calculation if set')
-    protein_target_strategy = models.CharField(
-        max_length=20,
-        choices=ProteinTargetStrategy.choices,
-        default=ProteinTargetStrategy.STANDARD_RDA
+    custom_nutrient_targets = models.JSONField(
+        blank=True, # Blank is okay as default will fill it
+        null=False, # Should always have a dict, even if empty, due to default
+        default=get_default_nutrient_targets, 
+        help_text='Store custom nutrient targets, e.g., {"NutrientName": {"target": 100, "unit": "mg", "is_override": true}}'
     )
-    custom_protein_target_g = models.FloatField(blank=True, null=True, validators=[MinValueValidator(0)], help_text='Used if strategy is Custom Grams')
-    # For custom_nutrient_targets, a JSONField might be suitable if we don't want another table.
-    # Or a ManyToMany through model to Nutrient with a target_value field.
-    # For simplicity now, this is not directly modeled but can be added.
     notes = models.TextField(blank=True, null=True)
+
+    def get_personalized_drvs(self):
+        """
+        Calculates personalized Daily Recommended Values for this person, 
+        considering general DRVs and specific overrides from their profile.
+        Returns a dictionary: {nutrient_name: {'rda': float/None, 'ul': float/None, 'unit': str}}
+        All RDA/UL values are returned in the nutrient's canonical unit if it's a system nutrient,
+        or the unit specified in custom_targets if it's a purely custom nutrient.
+        """
+        personalized_values = {}
+        all_system_nutrients = Nutrient.objects.all()
+        system_nutrient_names = {n.name for n in all_system_nutrients}
+
+        # Step 1: Process all system nutrients (from Nutrient table)
+        for nutrient in all_system_nutrients:
+            base_rda = nutrient.get_default_rda() # Fetches from DRV model, e.g., PRI for Adults
+            base_ul = nutrient.get_upper_limit()   # Fetches from DRV model, e.g., UL for Adults
+            canonical_unit = nutrient.unit
+
+            current_rda = base_rda
+            current_ul = base_ul
+            # The unit for this nutrient will be its canonical unit.
+            # If custom_targets specify a different unit, it's for user input convenience;
+            # the value should ideally be pre-converted or understood to be in the canonical unit.
+
+            if self.custom_nutrient_targets and nutrient.name in self.custom_nutrient_targets:
+                custom_spec = self.custom_nutrient_targets[nutrient.name]
+                
+                # RDA override logic:
+                # 'target' in custom_spec is considered the RDA.
+                # It overrides if 'is_override' is true, or if no base_rda exists.
+                if custom_spec.get('is_override', False) or base_rda is None:
+                    if 'target' in custom_spec:
+                        current_rda = custom_spec['target']
+                elif 'target' in custom_spec and current_rda is None: # Not an override, but base was None, so use custom.
+                    current_rda = custom_spec['target']
+
+                # UL override logic:
+                # Custom 'ul' always overrides the base_ul if present.
+                if 'ul' in custom_spec:
+                    current_ul = custom_spec['ul']
+                
+                # Check for unit mismatch in custom_targets, but do not change canonical_unit for system nutrients.
+                # The values in custom_spec ('target', 'ul') are assumed to be interpretable in the canonical_unit.
+                if 'unit' in custom_spec and custom_spec['unit'] != canonical_unit:
+                    # This is a good place for logging in a real application.
+                    print(f"INFO: PersonProfile '{self.name}' has custom target for '{nutrient.name}' with unit '{custom_spec['unit']}', "
+                          f"but canonical unit is '{canonical_unit}'. Values are assumed to be in canonical unit or pre-converted.")
+            
+            # Include the nutrient if it has an RDA, a UL, or was mentioned in custom_targets (even if values are null)
+            # This ensures that if a user customizes a nutrient (e.g., sets RDA to 0 or UL to null), it's still part of their profile.
+            if current_rda is not None or current_ul is not None or (self.custom_nutrient_targets and nutrient.name in self.custom_nutrient_targets):
+                personalized_values[nutrient.name] = {
+                    'rda': current_rda,
+                    'ul': current_ul,
+                    'unit': canonical_unit
+                }
+
+        # Step 2: Add purely custom nutrients (defined in custom_nutrient_targets but not in Nutrient table)
+        if self.custom_nutrient_targets:
+            for nutrient_name, targets_spec in self.custom_nutrient_targets.items():
+                if nutrient_name not in system_nutrient_names:
+                    # This nutrient is not a system nutrient, so it wasn't processed above.
+                    # We take its definition (rda, ul, unit) directly from custom_nutrient_targets.
+                    personalized_values[nutrient_name] = {
+                        'rda': targets_spec.get('target'), # 'target' field is used for RDA
+                        'ul': targets_spec.get('ul'),
+                        'unit': targets_spec.get('unit', '') # Default to empty string if no unit specified
+                    }
+        
+        return personalized_values
 
     def __str__(self):
         return self.name
@@ -314,11 +405,124 @@ class MealPlan(models.Model):
     duration_days = models.PositiveIntegerField(default=7, validators=[MinValueValidator(1)])
     target_people_profiles = models.ManyToManyField(PersonProfile, related_name='meal_plans', blank=True)
     meal_components = models.ManyToManyField(MealComponent, related_name='meal_plans', blank=True)
-    servings_per_day_per_person = models.PositiveIntegerField(default=2, validators=[MinValueValidator(1)], help_text='e.g., 2 meal boxes per person per day')
+    servings_per_day_per_person = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)], help_text='e.g., How many meal boxes/main servings per person per day this plan provides nutrition for.') # Defaulted to 1 for simplicity in initial calculation logic
     # owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, help_text="User who created this plan")
     notes = models.TextField(blank=True, null=True)
     creation_date = models.DateTimeField(auto_now_add=True)
     last_modified_date = models.DateTimeField(auto_now=True)
+
+    def get_plan_nutritional_totals(self):
+        """
+        Calculates the sum of each nutrient for the entire meal plan duration for one person.
+        Considers component frequency, plan duration, and servings per day.
+        Returns a dictionary like: {'Nutrient Name': {'amount': X, 'unit': 'Y'}, ...}
+        """
+        plan_totals = defaultdict(lambda: {'amount': 0, 'unit': ''})
+        num_people = 1 # Hardcoded for now, can be len(self.target_people_profiles.all()) or another field later
+
+        if not self.pk: # Not saved yet, no components to calculate from
+            return {}
+
+        for component in self.meal_components.all().prefetch_related('ingredientusage_set__ingredient__ingredientnutrientlink_set__nutrient'):
+            component_nutrition = component.get_nutritional_totals() # This is per one instance of the component
+            
+            # Determine how many times this component's nutrition is counted over the plan duration for one person
+            multiplier = 0
+            if component.frequency == MealComponentFrequency.PER_MEAL_BOX:
+                # Total servings for one person over the plan duration
+                total_servings = self.duration_days * self.servings_per_day_per_person 
+                multiplier = total_servings
+            elif component.frequency == MealComponentFrequency.DAILY_TOTAL:
+                multiplier = self.duration_days
+            elif component.frequency == MealComponentFrequency.WEEKLY_TOTAL:
+                # How many full or partial weeks in the plan duration
+                multiplier = self.duration_days / 7.0 
+            
+            for nutrient_name, data in component_nutrition.items():
+                plan_totals[nutrient_name]['amount'] += data['amount'] * multiplier
+                if not plan_totals[nutrient_name]['unit']:
+                    plan_totals[nutrient_name]['unit'] = data['unit']
+
+        # Apply overall multiplier for number of people (if we were to use it)
+        # For now, it's per one person for the plan duration
+        # if num_people > 0:
+        #     for nutrient_name in plan_totals:
+        #         plan_totals[nutrient_name]['amount'] *= num_people
+
+        # Round amounts for cleaner display
+        for nutrient_name in plan_totals:
+            plan_totals[nutrient_name]['amount'] = round(plan_totals[nutrient_name]['amount'], 2)
+            
+        return dict(plan_totals)
+
+    def get_plan_nutritional_targets(self):
+        """
+        Calculates the sum of personalized DRVs for all target people in the plan.
+        Returns a dictionary like: {'Nutrient Name': {'rda': X, 'ul': Y, 'unit': 'Z'}, ...}
+        RDAs are summed. ULs are taken as the minimum non-null UL among profiles for that nutrient.
+        """
+        if not self.pk or not self.target_people_profiles.exists():
+            return {}
+
+        plan_targets_sum_rda = defaultdict(lambda: {'amount': 0, 'unit': None, 'name': None})
+        plan_targets_min_ul = defaultdict(lambda: {'amount': float('inf'), 'unit': None, 'name': None})
+        # Use a set to store nutrient objects to ensure we only process each nutrient once for ULs
+        processed_nutrients_for_ul = defaultdict(list)
+
+        profiles = self.target_people_profiles.all()
+        num_profiles = profiles.count()
+
+        if num_profiles == 0:
+            return {}
+
+        for profile in profiles:
+            person_drvs = profile.get_personalized_drvs() # This returns {nutrient_name: {rda, ul, unit}}
+            for nutrient_name, drv_data in person_drvs.items():
+                key = nutrient_name # Use name as the primary key for aggregation
+
+                if drv_data['rda'] is not None:
+                    plan_targets_sum_rda[key]['amount'] += drv_data['rda']
+                if plan_targets_sum_rda[key]['unit'] is None:
+                    plan_targets_sum_rda[key]['unit'] = drv_data['unit']
+                if plan_targets_sum_rda[key]['name'] is None:
+                    plan_targets_sum_rda[key]['name'] = nutrient_name
+
+                if drv_data['ul'] is not None:
+                    # Collect all ULs for this nutrient from different profiles
+                    processed_nutrients_for_ul[key].append(drv_data['ul'])
+                    if plan_targets_min_ul[key]['unit'] is None:
+                         plan_targets_min_ul[key]['unit'] = drv_data['unit'] # Assume unit is consistent for UL
+                    if plan_targets_min_ul[key]['name'] is None:
+                         plan_targets_min_ul[key]['name'] = nutrient_name
+        #
+        # Consolidate into final structure
+        final_plan_targets = {}
+        all_nutrient_keys = set(plan_targets_sum_rda.keys()) | set(plan_targets_min_ul.keys())
+
+        for key in all_nutrient_keys:
+            rda_data = plan_targets_sum_rda.get(key)
+            ul_data_list = processed_nutrients_for_ul.get(key)
+
+            final_rda = rda_data['amount'] if rda_data and rda_data['amount'] > 0 else None
+            final_unit = (rda_data['unit'] if rda_data else None) or plan_targets_min_ul.get(key, {}).get('unit')
+            # Determine the final UL: the minimum of all collected ULs for this nutrient
+            # If no ULs were found for any profile for this nutrient, it remains None.
+            min_ul_value = None
+            if ul_data_list:
+                non_null_uls = [ul for ul in ul_data_list if ul is not None]
+                if non_null_uls:
+                    min_ul_value = min(non_null_uls)
+
+            nutrient_display_name = (rda_data['name'] if rda_data else None) or plan_targets_min_ul.get(key, {}).get('name') or key
+
+            if final_rda is not None or min_ul_value is not None: # Only include if there's an RDA or UL
+                final_plan_targets[nutrient_display_name] = {
+                    'rda': final_rda,
+                    'ul': min_ul_value,
+                    'unit': final_unit
+                }
+
+        return final_plan_targets
 
     def __str__(self):
         return self.name

@@ -50,10 +50,22 @@ class MealComponentAdmin(admin.ModelAdmin):
 
 @admin.register(PersonProfile)
 class PersonProfileAdmin(admin.ModelAdmin):
-    list_display = ('name', 'age_years', 'gender', 'weight_kg', 'activity_level', 'protein_target_strategy')
-    list_filter = ('gender', 'activity_level', 'protein_target_strategy')
+    list_display = ('name', 'age_years', 'gender', 'weight_kg', 'activity_level')
+    list_filter = ('gender', 'activity_level')
     search_fields = ('name', 'notes')
-    # fieldsets or field_sets to organize the form would be good here
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'notes')
+        }),
+        ('Physical Characteristics', {
+            'fields': ('age_years', 'gender', 'weight_kg', 'height_cm', 'activity_level')
+        }),
+        ('Dietary Targets', {
+            'fields': ('custom_nutrient_targets',)
+        }),
+    )
+    # To make JSONField more readable if it gets complex, consider a custom widget
+    # or just rely on the default JSON string editing for now.
 
 @admin.register(MealPlan)
 class MealPlanAdmin(admin.ModelAdmin):

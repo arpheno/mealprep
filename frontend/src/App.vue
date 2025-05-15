@@ -2,6 +2,7 @@
   <div id="app-container" :class="{ 'dark-theme': isDarkMode }">
     <nav>
       <router-link to="/create-meal-component">Create Meal Component</router-link>
+      <router-link to="/create-meal-plan">Create Meal Plan</router-link>
       <button @click="toggleDarkMode" class="theme-toggle">
         {{ isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode' }}
       </button>
