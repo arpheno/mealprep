@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from api.models import (
     Ingredient, MealComponent, MealPlan, PersonProfile,
     IngredientUsage, Nutrient, IngredientNutrientLink,
-    MealComponentFrequency, IngredientFoodCategory
+    MealComponentFrequency, IngredientFoodCategory, MealPlanItem
 )
 
 @pytest.mark.django_db
@@ -234,11 +234,27 @@ class TestMealPlanModel:
             servings_per_day_per_person=2
         )
         
-        # Add the person profile and meal components to the plan
+        # Add the person profile to the plan
         self.meal_plan.target_people_profiles.add(self.person)
-        self.meal_plan.meal_components.add(self.daily_component)
-        self.meal_plan.meal_components.add(self.meal_component)
-        self.meal_plan.meal_components.add(self.weekly_component)
+        
+        # Add meal components to the plan through MealPlanItem
+        self.plan_item1 = MealPlanItem.objects.create(
+            meal_plan=self.meal_plan,
+            meal_component=self.daily_component
+        )
+        self.plan_item1.assigned_people.add(self.person)
+        
+        self.plan_item2 = MealPlanItem.objects.create(
+            meal_plan=self.meal_plan,
+            meal_component=self.meal_component
+        )
+        self.plan_item2.assigned_people.add(self.person)
+        
+        self.plan_item3 = MealPlanItem.objects.create(
+            meal_plan=self.meal_plan,
+            meal_component=self.weekly_component
+        )
+        self.plan_item3.assigned_people.add(self.person)
     
     def test_meal_plan_creation(self):
         """Test the basic properties of a meal plan"""
@@ -249,7 +265,7 @@ class TestMealPlanModel:
         
         # Test relationships
         assert self.meal_plan.target_people_profiles.count() == 1
-        assert self.meal_plan.meal_components.count() == 3
+        assert self.meal_plan.plan_items.count() == 3
         
     def test_get_plan_nutritional_totals(self):
         """Test calculation of nutritional totals for a meal plan"""
