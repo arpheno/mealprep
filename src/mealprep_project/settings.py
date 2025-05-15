@@ -102,23 +102,30 @@ WSGI_APPLICATION = 'mealprep_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
+import os
+import sys
 
-DATABASES = {
-    # read os.environ['DATABASE_URL'] and raises
-    # ImproperlyConfigured error if not found
-    #
-    # The db() method is an alias for db_url().
-    'default': env.db_url(
-        'DATABASE_URL',
-        default=f'sqlite:///{BASE_DIR / "db.sqlite3"}'
-    )
-}
+# Check if running with PYTHONPATH=src (testing environment)
+if 'pytest' in sys.modules:
+    # Use SQLite for tests
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'test_db.sqlite3',
+        }
+    }
+else:
+    # Use configured database for normal operation
+    DATABASES = {
+        # read os.environ['DATABASE_URL'] and raises
+        # ImproperlyConfigured error if not found
+        #
+        # The db() method is an alias for db_url().
+        'default': env.db_url(
+            'DATABASE_URL',
+            default=f'sqlite:///{BASE_DIR / "db.sqlite3"}'
+        )
+    }
 
 
 # Password validation
