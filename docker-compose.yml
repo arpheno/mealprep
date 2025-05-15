@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: gunicorn --workers 2 --bind 0.0.0.0:5000 mealprep_project.wsgi:application
+    ports:
+      - "5001:5000" # Host:Container (e.g., access Django on localhost:5001)
+    volumes:
+      # Mount the entire project directory for live reloading during development
+      # This means changes in your local code will be reflected in the container.
+      - .:/home/appuser/app 
+    env_file:
+      - .env # Load environment variables from .env file for the web service
+    environment:
+      - PYTHONPATH=/home/appuser/app/src
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      # These are used by the PostgreSQL image to initialize the DB
+      # They should align with the DATABASE_URL in your .env file for the 'web' service
+      - POSTGRES_USER=${POSTGRES_USER:-meal_user} # Allows override from .env or defaults
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-supersecretpassword}
+      - POSTGRES_DB=${POSTGRES_DB:-mealprep_db}
+    ports:
+      # Optionally expose PostgreSQL port to host for direct DB access via tools like pgAdmin/psql
+      # Format: "host_port:container_port"
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80" # Host:Container (Vue app will be on localhost:8080)
+
+volumes:
+  postgres_data: # Persists database data across restarts 

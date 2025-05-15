@@ -1,0 +1,15 @@
+/* frontend/src/assets/global.css */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  height: 100%; /* Ensure html and body take full height */
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: Avenir, Helvetica, Arial, sans-serif; /* Apply base font family globally */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* You can add other global resets or base styles here too */ 

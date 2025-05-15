@@ -1,0 +1,62 @@
+[project]
+name = "mealprep_app"
+version = "0.1.0"
+description = "A web application for meal planning and nutritional tracking using Django."
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+  {name = "Your Name", email = "you@example.com"},
+]
+maintainers = [
+  {name = "Your Name", email = "you@example.com"},
+]
+keywords = ["meal prep", "nutrition", "django", "drf"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: Django",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Utilities",
+]
+
+dependencies = [
+    "django>=5.0,<5.1",
+    "django-environ>=0.11.2,<0.12",
+    "psycopg2-binary>=2.9.9,<2.10",
+    "djangorestframework>=3.15.1,<3.16",
+    "uv>=0.1.39",
+    "pytest-django>=4.8.0,<4.9",
+    "gunicorn>=22.0.0,<23.0.0",
+    "django-cors-headers>=4.3.1,<4.4",
+    "pandas>=2.0,<2.3",
+    "openpyxl>=3.1,<3.2"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-django>=4.5",
+    "uv>=0.1.18",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/yourusername/mealprep_app" # Replace
+"Bug Tracker" = "https://github.com/yourusername/mealprep_app/issues" # Replace
+
+[tool.uv]
+# UV specific configurations can go here
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "mealprep_project.settings"
+python_files = "tests.py test_*.py *_tests.py"
+
+[tool.setuptools.packages.find]
+where = ["src"] 

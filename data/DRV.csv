@@ -1,0 +1,71 @@
+Category,Nutrient,Target population,Age,Gender,frequency,unit,AI,AR,PRI,RI,UL
+Carbohydrates,Dietary fibre,Adults,≥ 18 years,Male,daily,g,25,,,,
+Carbohydrates,Dietary fibre,Adults,≥ 18 years,Female,daily,g,25,,,,
+Carbohydrates,Total carbohydrates,Adults,≥ 18 years,Male,daily,E%,,,,45,
+Carbohydrates,Total carbohydrates,Adults,≥ 18 years,Female,daily,E%,,,,45,
+Fats,Alpha-linolenic acid (ALA),Adults,≥ 18 years,Both genders,daily,E%,0.5,,,,
+Fats,"Eicosapentaenoic acid, Docosahexaenoic acid (EPA, DHA)",Adults,≥ 18 years,Both genders,daily,mg,250,,,,
+Fats,Linoleic acid (LA),Adults,≥ 18 years,Both genders,daily,E%,4,,,,
+Fats,Saturated fatty acids (SFA),Adults,≥ 18 years,Both genders,daily,,,,,,
+Fats,Total fat,Adults,≥ 18 years,Both genders,daily,E%,,,,20,
+Fats,Trans-fatty acids (TFA),Adults,≥ 18 years,Both genders,daily,,,,,,
+Water,Water,Adults,≥ 18 years,Male,daily,mg,6000,,,,
+Water,Water,Adults,≥ 18 years,Female,daily,mg,4500,,,,
+Minerals,Calcium,Adults,≥ 25 years,Male,daily,mg,,750,950,,2500
+Minerals,Chloride,Adults,≥ 18 years,Male,daily,mg,3100,,,,
+Minerals,Calcium,Adults,≥ 25 years,Female,daily,mg,,750,950,,2500
+Minerals,Chloride,Adults,≥ 18 years,Female,daily,mg,3100,,,,
+Minerals,Copper,Adults,≥ 18 years,Male,daily,mg,1.6,,,,5
+Minerals,Copper,Adults,≥ 18 years,Female,daily,mg,1.3,,,,5
+Minerals,Fluoride,Adults,≥ 18 years,Male,daily,mg,3.4,,,,7
+Minerals,Fluoride,Adults,≥ 18 years,Female,daily,mg,2.9,,,,7
+Minerals,Iodine,Adults,≥ 18 years,Male,daily,ug,150,,,,600
+Minerals,Iodine,Adults,≥ 18 years,Female,daily,ug,150,,,,600
+Minerals,Iron,Adults,≥ 18 years,Female,daily,mg,,7,16,,
+Minerals,Iron,Adults,≥ 18 years,Male,daily,mg,,6,11,,
+Minerals,Magnesium,Adults,≥ 18 years,Male,daily,mg,350,,,,2500
+Minerals,Magnesium,Adults,≥ 18 years,Female,daily,mg,300,,,,2500
+Minerals,Manganese,Adults,≥ 18 years,Male,daily,mg,3,,,,
+Minerals,Manganese,Adults,≥ 18 years,Female,daily,mg,3,,,,
+Minerals,Molybdenum,Adults,≥ 18 years,Male,daily,ug,65,,,,650
+Minerals,Molybdenum,Adults,≥ 18 years,Female,daily,ug,65,,,,650
+Minerals,Phosphorus,Adults,≥ 18 years,Male,daily,mg,550,,,,
+Minerals,Phosphorus,Adults,≥ 18 years,Female,daily,mg,550,,,,
+Minerals,Potassium,Adults,≥ 18 years,Male,daily,mg,3500,,,,
+Minerals,Potassium,Adults,≥ 18 years,Female,daily,mg,3500,,,,
+Minerals,Selenium,Adults,≥ 18 years,Male,daily,ug,70,,,,255
+Minerals,Selenium,Adults,≥ 18 years,Female,daily,ug,70,,,,255
+Minerals,Sodium,Adults,≥ 18 years,Male,daily,mg,2000,,,,
+Minerals,Sodium,Adults,≥ 18 years,Female,daily,mg,2000,,,,
+Minerals,Zinc,Adults,≥ 18 years,Male,daily,mg,,12.7,16.3,,25
+Minerals,Zinc,Adults,≥ 18 years,Female,daily,mg,,10.2,12.7,,25
+Vitamins,Biotin,Adults,≥ 18 years,Male,daily,ug,40,,,,
+Vitamins,Choline,Adults,≥ 18 years,Male,daily,mg,400,,,,
+Vitamins,Cobalamin,Adults,≥ 18 years,Male,daily,ug,4,,,,
+Vitamins,Folate,Adults,≥ 18 years,Male,daily,ug,,250,330,,1000
+Vitamins,Niacin,Adults,≥ 18 years,Male,daily,mg,,15.2399,18.7568,,900
+Vitamins,Pantothenic acid,Adults,≥ 18 years,Male,daily,mg,5,,,,
+Vitamins,Riboflavin,Adults,≥ 18 years,Male,daily,mg,,1.3,1.6,,
+Vitamins,Thiamin,Adults,≥ 18 years,Male,daily,mg,,0.844056,1.1723,,
+Vitamins,Biotin,Adults,≥ 18 years,Female,daily,ug,40,,,,
+Vitamins,Choline,Adults,≥ 18 years,Female,daily,mg,400,,,,
+Vitamins,Cobalamin,Adults,≥ 18 years,Female,daily,ug,4,,,,
+Vitamins,Folate,Adults,≥ 18 years,Female,daily,ug,,250,330,,1000
+Vitamins,Niacin,Adults,≥ 18 years,Female,daily,mg,,15.2399,18.7568,,900
+Vitamins,Pantothenic acid,Adults,≥ 18 years,Female,daily,mg,5,,,,
+Vitamins,Riboflavin,Adults,≥ 18 years,Female,daily,mg,,1.3,1.6,,
+Vitamins,Thiamin,Adults,≥ 18 years,Female,daily,mg,,0.844056,1.1723,,
+Vitamins,Vitamin A,Adults,≥ 18 years,Male,daily,ug,,570,750,,3000
+Vitamins,Vitamin A,Adults,18-59 years,Female,daily,ug,,490,650,,3000
+Vitamins,Vitamin B-6,Adults,≥ 18 years,Male,daily,mg,,1.5,1.7,,12
+Vitamins,Vitamin B-6,Adults,≥ 18 years,Female,daily,mg,,1.3,1.6,,12
+Vitamins,Vitamin B-12,Adults,≥ 18 years,Male,daily,ug,4,,,,
+Vitamins,Vitamin B-12,Adults,≥ 18 years,Female,daily,ug,4,,,,
+Vitamins,Vitamin C,Adults,≥ 18 years,Male,daily,mg,,90,110,,
+Vitamins,Vitamin C,Adults,≥ 18 years,Female,daily,mg,,80,95,,
+Vitamins,Vitamin D,Adults,≥ 18 years,Female,daily,ug,15,,,,100
+Vitamins,Vitamin D,Adults,≥ 18 years,Male,daily,ug,15,,,,100
+Vitamins,Vitamin E,Adults,≥ 18 years,Male,daily,mg,13,,,,300
+Vitamins,Vitamin E,Adults,≥ 18 years,Female,daily,mg,11,,,,300
+Vitamins,Vitamin K ,Adults,≥ 18 years,Male,daily,ug,70,,,,
+Vitamins,Vitamin K ,Adults,≥ 18 years,Female,daily,ug,70,,,,
