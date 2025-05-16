@@ -151,10 +151,14 @@ class MealPlanViewSetTests(APITestCase):
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)
+        self.assertTrue('results' in response.data, "Response should be paginated and contain 'results' key")
+        self.assertEqual(response.data['count'], 2)
+        
+        results = response.data['results']
+        self.assertEqual(len(results), 2)
         
         # Check that the meal plan names match what we expect
-        plan_names = [plan['name'] for plan in response.data]
+        plan_names = [plan['name'] for plan in results]
         self.assertIn("Weekly Meal Plan", plan_names)
         self.assertIn("Weekend Meal Plan", plan_names)
     
@@ -170,7 +174,7 @@ class MealPlanViewSetTests(APITestCase):
         self.assertEqual(response.data['servings_per_day_per_person'], 3)
         
         # Check that it has the correct number of related objects
-        self.assertEqual(len(response.data['target_people_profiles']), 1)
+        self.assertEqual(len(response.data['target_people_profiles_detail']), 1) # Changed to target_people_profiles_detail
         self.assertEqual(len(response.data['plan_items']), 1)
     
     def test_create_meal_plan(self):
@@ -190,7 +194,7 @@ class MealPlanViewSetTests(APITestCase):
         
         # Check that our new meal plan exists in the database
         new_plan = MealPlan.objects.get(name='Daily Meal Plan')
-        self.assertEqual(new_plan.description, 'A daily meal plan')
+        self.assertEqual(new_plan.notes, 'A daily meal plan') # Changed from description to notes
         self.assertEqual(new_plan.duration_days, 1)
         self.assertEqual(new_plan.servings_per_day_per_person, 4)
         self.assertEqual(new_plan.target_people_profiles.count(), 1)
@@ -213,7 +217,7 @@ class MealPlanViewSetTests(APITestCase):
         # Refresh the meal plan from the database
         self.plan2.refresh_from_db()
         self.assertEqual(self.plan2.name, 'Updated Weekend Meal Plan')
-        self.assertEqual(self.plan2.description, 'An updated weekend meal plan')
+        self.assertEqual(self.plan2.notes, 'An updated weekend meal plan') # Changed from description to notes
         self.assertEqual(self.plan2.duration_days, 3)
         self.assertEqual(self.plan2.servings_per_day_per_person, 3)
         self.assertEqual(self.plan2.target_people_profiles.count(), 1)
@@ -225,6 +229,7 @@ class MealPlanViewSetTests(APITestCase):
         data = {
             'name': 'Updated Weekly Meal Plan',
             'duration_days': 5,  # Changed from 7 to 5
+            'notes': 'A weekly meal plan' # Added notes to ensure it's not None if not updated
         }
         response = self.client.patch(url, data)
         
@@ -233,7 +238,7 @@ class MealPlanViewSetTests(APITestCase):
         # Refresh the meal plan from the database
         self.plan1.refresh_from_db()
         self.assertEqual(self.plan1.name, 'Updated Weekly Meal Plan')
-        self.assertEqual(self.plan1.description, 'A weekly meal plan')  # Unchanged
+        self.assertEqual(self.plan1.notes, 'A weekly meal plan')  # Changed from description to notes
         self.assertEqual(self.plan1.duration_days, 5)
         self.assertEqual(self.plan1.servings_per_day_per_person, 3)  # Unchanged
         

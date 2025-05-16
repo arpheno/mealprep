@@ -65,11 +65,15 @@ class IngredientNutrientLinkViewSetTests(APITestCase):
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 3)
+        self.assertTrue('results' in response.data, "Response should be paginated and contain 'results' key")
+        self.assertEqual(response.data['count'], 3)
+        
+        results = response.data['results']
+        self.assertEqual(len(results), 3)
         
         # Check that the links match what we expect
-        ingredients = [link['ingredient'] for link in response.data]
-        nutrients = [link['nutrient'] for link in response.data]
+        ingredients = [link['ingredient'] for link in results]
+        nutrients = [link['nutrient'] for link in results]
         
         self.assertIn(self.chicken.id, ingredients)
         self.assertIn(self.broccoli.id, ingredients)

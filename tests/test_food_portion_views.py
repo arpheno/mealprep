@@ -60,10 +60,14 @@ class FoodPortionViewSetTests(APITestCase):
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 3)
+        self.assertTrue('results' in response.data, "Response should be paginated and contain 'results' key")
+        self.assertEqual(response.data['count'], 3)
+        
+        results = response.data['results']
+        self.assertEqual(len(results), 3)
         
         # Check that the food portion descriptions match what we expect
-        portion_descriptions = [portion['portion_description'] for portion in response.data]
+        portion_descriptions = [portion['portion_description'] for portion in results]
         self.assertIn("1 medium breast, boneless, skinless", portion_descriptions)
         self.assertIn("1/2 breast", portion_descriptions)
         self.assertIn("1 cup, cooked", portion_descriptions)
