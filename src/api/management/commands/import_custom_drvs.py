@@ -1,12 +1,16 @@
 import csv
 import re
+import os
 import pandas as pd
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from django.conf import settings
 from api.models import Nutrient, DietaryReferenceValue, Gender # Ensure Gender is imported
 
 # Define the path to the CSV file, relative to the project root
-CSV_FILE_PATH = "data/drv.csv"
+# Default path that can be overridden via settings
+def get_csv_path():
+    return getattr(settings, 'CSV_FILE_PATH', "data/drv.csv")
 
 # Column names from the CSV
 # Category,Nutrient,Target population,Age,Gender,frequency,unit,AI,AR,PRI,RI,UL
@@ -28,6 +32,8 @@ def parse_float_or_none(value_str):
 
 # Helper function to extract content from parentheses (from import_efsa_drvs.py)
 def extract_parentheses_content(name_str):
+    if name_str is None:
+        return None
     match = re.search(r'\((.*?)\)', name_str)
     if match:
         return match.group(1).strip()
@@ -38,22 +44,29 @@ def get_nutrient_name_variants(nutrient_name):
     Generates a list of name variants for a nutrient name for matching.
     """
     variants = set()
+    
+    # Return empty list for None or empty string
+    if nutrient_name is None or not nutrient_name.strip():
+        return list(variants)
+    
+    # Normalize whitespace - replace multiple spaces with a single space
+    nutrient_name = " ".join(nutrient_name.strip().split())
     name_lower = nutrient_name.lower()
 
     # Original and lowercase
-    variants.add(nutrient_name.strip()) # Ensure original is stripped
-    variants.add(name_lower.strip())
+    variants.add(nutrient_name) # Already normalized
+    variants.add(name_lower)
 
     # Hyphens removed / replaced by space
-    name_no_hyphen = nutrient_name.strip().replace('-', '')
-    name_hyphen_as_space = nutrient_name.strip().replace('-', ' ')
+    name_no_hyphen = nutrient_name.replace('-', '')
+    name_hyphen_as_space = nutrient_name.replace('-', ' ')
     variants.add(name_no_hyphen)
     variants.add(name_no_hyphen.lower())
     variants.add(name_hyphen_as_space)
     variants.add(name_hyphen_as_space.lower())
 
     # Content within parentheses
-    content_in_paren = extract_parentheses_content(nutrient_name.strip())
+    content_in_paren = extract_parentheses_content(nutrient_name)
     if content_in_paren:
         variants.add(content_in_paren)
         variants.add(content_in_paren.lower())
@@ -64,8 +77,15 @@ def get_nutrient_name_variants(nutrient_name):
         variants.add(paren_hyphen_as_space)
         variants.add(paren_hyphen_as_space.lower())
 
-    # Base part of name (before " as " or ",")
-    base_name = nutrient_name.strip().split(" as ")[0].split(",")[0].strip()
+    # Base part of name (before parentheses, " as ", or ",")
+    # First handle base name without parenthetical content
+    if "(" in nutrient_name:
+        base_before_paren = nutrient_name.split("(")[0].strip()
+        variants.add(base_before_paren)
+        variants.add(base_before_paren.lower())
+    
+    # Then handle " as " or ","
+    base_name = nutrient_name.split(" as ")[0].split(",")[0].strip()
     if base_name != nutrient_name.strip():
         variants.add(base_name)
         variants.add(base_name.lower())
@@ -93,6 +113,9 @@ def find_nutrient(nutrient_name_csv, processed_db_nutrients_cache):
     processed_db_nutrients_cache is a list of dicts:
         [{'id': nutrient_id, 'original_name': name, 'name_variants': [variant1, variant2...]} ...]
     """
+    if nutrient_name_csv is None or not nutrient_name_csv:
+        return None
+        
     csv_name_variants = get_nutrient_name_variants(nutrient_name_csv)
 
     # Exact matches first
@@ -160,7 +183,8 @@ class Command(BaseCommand):
         update_existing = options['update_existing']
         dry_run = options['dry_run']
 
-        self.stdout.write(self.style.SUCCESS(f"Starting DRV import from {CSV_FILE_PATH}"))
+        csv_path = get_csv_path()
+        self.stdout.write(self.style.SUCCESS(f"Starting DRV import from {csv_path}"))
         if dry_run:
             self.stdout.write(self.style.WARNING("Dry run mode: No database changes will be made."))
 
@@ -189,16 +213,17 @@ class Command(BaseCommand):
 
 
         try:
-            with open(CSV_FILE_PATH, mode='r', encoding='utf-8') as csvfile:
+            csv_path = get_csv_path()
+            with open(csv_path, mode='r', encoding='utf-8') as csvfile:
                 reader = csv.DictReader(csvfile)
                 
                 if not reader.fieldnames:
-                    self.stderr.write(self.style.ERROR(f"CSV file {CSV_FILE_PATH} is empty or has no header."))
+                    self.stderr.write(self.style.ERROR(f"CSV file {csv_path} is empty or has no header."))
                     return
 
                 expected_headers = ['Category', 'Nutrient', 'Target population', 'Age', 'Gender', 'frequency', 'unit', 'AI', 'AR', 'PRI', 'RI', 'UL']
                 if not all(header in reader.fieldnames for header in expected_headers):
-                    self.stderr.write(self.style.ERROR(f"CSV file {CSV_FILE_PATH} is missing expected headers. Found: {reader.fieldnames}. Expected: {expected_headers}"))
+                    self.stderr.write(self.style.ERROR(f"CSV file {csv_path} is missing expected headers. Found: {reader.fieldnames}. Expected: {expected_headers}"))
                     return
 
                 for row_num, row in enumerate(reader, start=2): # start=2 for 1-based header + 1-based data
@@ -331,7 +356,8 @@ class Command(BaseCommand):
                         # For now, continue processing other rows
         
         except FileNotFoundError:
-            self.stderr.write(self.style.ERROR(f"Error: CSV file not found at {CSV_FILE_PATH}"))
+            csv_path = get_csv_path()
+            self.stderr.write(self.style.ERROR(f"Error: CSV file not found at {csv_path}"))
             return
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"An unexpected error occurred: {e}"))

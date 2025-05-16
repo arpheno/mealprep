@@ -29,5 +29,5 @@ router.register(r'dietaryreferencevalues', DietaryReferenceValueViewSet)
 urlpatterns = [
     path('ingredients/search/', IngredientSearchAPIView.as_view(), name='ingredient-search'),
     path('', include(router.urls)),
-    path('calculate-nutritional-targets/', CalculateNutritionalTargetsView.as_view(), name='calculate_nutritional_targets'),
+    path('calculate-nutritional-targets/', CalculateNutritionalTargetsView.as_view(), name='calculate-nutritional-targets'),
 ] 

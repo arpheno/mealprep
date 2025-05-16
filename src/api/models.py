@@ -399,12 +399,51 @@ class IngredientUsage(models.Model):
         # unique_together = ('meal_component', 'ingredient')
         ordering = ['meal_component__name', 'ingredient__name']
 
+# Define MealPlanItem before MealPlan if MealPlan refers to it,
+# or use string references if preferred for ordering.
+# For clarity, let's define it before MealPlan, though Django handles string references well.
+
+class MealPlanItem(models.Model):
+    """
+    Intermediary model detailing how a specific MealComponent is used within a MealPlan,
+    including assignments to specific people.
+    """
+    meal_plan = models.ForeignKey('MealPlan', on_delete=models.CASCADE, related_name='plan_items')
+    meal_component = models.ForeignKey(MealComponent, on_delete=models.CASCADE, related_name='used_in_plans_as_item')
+    
+    # People specifically assigned to this meal component instance within this plan.
+    # If empty, it could imply it's for everyone in the plan's target_people_profiles (convention-based),
+    # OR the convention could be that 'for everyone' means explicitly linking all target_people_profiles.
+    # Based on user feedback, we will explicitly link all target_people_profiles if it's for everyone.
+    assigned_people = models.ManyToManyField(
+        PersonProfile, 
+        related_name='meal_plan_items', 
+        blank=True, # Allows an item to initially have no one, or for "shared" items if we adapt the convention
+        help_text="Specific people this meal component instance is assigned to in this plan. If for all, all plan's people will be linked."
+    )
+    
+    # Optional: Future enhancements
+    # quantity_multiplier = models.FloatField(default=1.0, validators=[MinValueValidator(0)], help_text="Multiplier for the component's recipe for this specific assignment (e.g., 0.5 for half portion, 2 for double).")
+    # notes = models.TextField(blank=True, null=True, help_text="Notes specific to this component's assignment in this plan.")
+
+    def __str__(self):
+        people_count = self.assigned_people.count()
+        if people_count > 0:
+            return f"{self.meal_component.name} in {self.meal_plan.name} (for {people_count} people)"
+        return f"{self.meal_component.name} in {self.meal_plan.name} (unassigned or shared)"
+
+    class Meta:
+        ordering = ['meal_plan__name', 'meal_component__name']
+        # A component could be added multiple times to a plan if, for example,
+        # it's assigned to different groups of people.
+        # unique_together = ('meal_plan', 'meal_component') # Reconsider if a component can appear multiple times with different assignments.
+
 class MealPlan(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     duration_days = models.PositiveIntegerField(default=7, validators=[MinValueValidator(1)])
     target_people_profiles = models.ManyToManyField(PersonProfile, related_name='meal_plans', blank=True)
-    meal_components = models.ManyToManyField(MealComponent, related_name='meal_plans', blank=True)
+    # meal_components = models.ManyToManyField(MealComponent, related_name='meal_plans', blank=True) # Removed
     servings_per_day_per_person = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)], help_text='e.g., How many meal boxes/main servings per person per day this plan provides nutrition for.') # Defaulted to 1 for simplicity in initial calculation logic
     # owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, help_text="User who created this plan")
     notes = models.TextField(blank=True, null=True)
@@ -413,41 +452,57 @@ class MealPlan(models.Model):
 
     def get_plan_nutritional_totals(self):
         """
-        Calculates the sum of each nutrient for the entire meal plan duration for one person.
-        Considers component frequency, plan duration, and servings per day.
+        Calculates the sum of each nutrient for the entire meal plan based on its items,
+        component frequencies, plan duration, servings per day, and assigned people per item.
         Returns a dictionary like: {'Nutrient Name': {'amount': X, 'unit': 'Y'}, ...}
         """
         plan_totals = defaultdict(lambda: {'amount': 0, 'unit': ''})
-        num_people = 1 # Hardcoded for now, can be len(self.target_people_profiles.all()) or another field later
 
-        if not self.pk: # Not saved yet, no components to calculate from
+        if not self.pk: # Not saved yet, no items to calculate from
             return {}
 
-        for component in self.meal_components.all().prefetch_related('ingredientusage_set__ingredient__ingredientnutrientlink_set__nutrient'):
+        # Efficiently fetch related data
+        plan_items_with_details = self.plan_items.all().select_related(
+            'meal_component'
+        ).prefetch_related(
+            'meal_component__ingredientusage_set__ingredient__ingredientnutrientlink_set__nutrient',
+            'assigned_people'
+        )
+
+        for plan_item in plan_items_with_details:
+            component = plan_item.meal_component
             component_nutrition = component.get_nutritional_totals() # This is per one instance of the component
             
-            # Determine how many times this component's nutrition is counted over the plan duration for one person
-            multiplier = 0
+            # Number of people this specific plan item is for.
+            # If an item has no assigned people, it doesn't contribute to the total nutrients prepared.
+            # (Alternative: if 0 means "all plan members", then use self.target_people_profiles.count() or default to 1 if no plan members)
+            num_people_for_this_item = plan_item.assigned_people.count()
+            if num_people_for_this_item == 0:
+                # If a plan item is not assigned to anyone, it doesn't contribute to totals.
+                # Or, if your convention is that unassigned = for all people in plan, you'd adjust here.
+                # For now, explicit assignment is required for an item to count towards totals.
+                # If there are no people in the *entire plan*, we might default to 1 to avoid division by zero elsewhere
+                # but for *this item*, 0 assigned people means 0 contribution from it.
+                continue 
+
+            # Determine how many times this component's nutrition is counted over the plan duration for ONE person
+            consumption_multiplier_per_person = 0
             if component.frequency == MealComponentFrequency.PER_MEAL_BOX:
-                # Total servings for one person over the plan duration
-                total_servings = self.duration_days * self.servings_per_day_per_person 
-                multiplier = total_servings
+                total_servings_per_person = self.duration_days * self.servings_per_day_per_person 
+                consumption_multiplier_per_person = total_servings_per_person
             elif component.frequency == MealComponentFrequency.DAILY_TOTAL:
-                multiplier = self.duration_days
+                consumption_multiplier_per_person = self.duration_days
             elif component.frequency == MealComponentFrequency.WEEKLY_TOTAL:
-                # How many full or partial weeks in the plan duration
-                multiplier = self.duration_days / 7.0 
+                consumption_multiplier_per_person = self.duration_days / 7.0
+            else: # Should not happen if data is clean
+                consumption_multiplier_per_person = 1 # Default fallback
             
             for nutrient_name, data in component_nutrition.items():
-                plan_totals[nutrient_name]['amount'] += data['amount'] * multiplier
+                # Total amount for this nutrient from this component item = (amount per component) * (how often one person eats it) * (how many people eat this item)
+                nutrient_amount_from_item = data['amount'] * consumption_multiplier_per_person * num_people_for_this_item
+                plan_totals[nutrient_name]['amount'] += nutrient_amount_from_item
                 if not plan_totals[nutrient_name]['unit']:
                     plan_totals[nutrient_name]['unit'] = data['unit']
-
-        # Apply overall multiplier for number of people (if we were to use it)
-        # For now, it's per one person for the plan duration
-        # if num_people > 0:
-        #     for nutrient_name in plan_totals:
-        #         plan_totals[nutrient_name]['amount'] *= num_people
 
         # Round amounts for cleaner display
         for nutrient_name in plan_totals:

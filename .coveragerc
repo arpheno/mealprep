@@ -1,0 +1,32 @@
+[run]
+source = src/api
+omit = 
+    */migrations/*
+    */apps.py
+    */settings.py
+    */admin.py
+    */urls.py
+    */wsgi.py
+    */asgi.py
+    */tests/*
+
+[report]
+# Exclude specific lines from coverage
+exclude_lines =
+    # Skip any pragma comments
+    pragma: no cover
+    
+    # Don't complain about missing debug-only code
+    def __repr__
+    if self\.debug
+    
+    # Don't complain if tests don't hit defensive assertion code
+    raise AssertionError
+    raise NotImplementedError
+    
+    # Don't complain if non-runnable code isn't run
+    if 0:
+    if __name__ == .__main__.:
+    
+    # Don't complain about abstract methods
+    @(abc\.)?abstractmethod

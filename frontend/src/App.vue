@@ -50,15 +50,19 @@ watch(isDarkMode, (newVal) => {
 :root {
   --color-background: #ffffff;
   --color-text: #2c3e50;
+  --color-heading: var(--color-text); /* Default heading color */
   --color-primary: #42b983;
   --color-nav-bg: #f8f9fa;
   --color-border: #eee;
+  --color-border-hover: #ddd; /* Slightly darker for hover */
+  --color-border-hover-light: #f5f5f5; /* Lighter for subtle lines */
   --color-input-bg: #fff;
   --color-input-border: #ccc;
+  --color-background-soft: #f9f9f9; /* Default soft background */
   --color-button-bg: #4CAF50;
   --color-button-text: #ffffff;
   --shadow-color: rgba(0,0,0,0.1);
-  --color-text-secondary: #555; /* Added for fallback cases */
+  --color-text-secondary: #555;
 
   /* Nutrient Bar Colors */
   --color-nutrient-bar-safe: #4CAF50;    /* Green */
@@ -70,15 +74,19 @@ watch(isDarkMode, (newVal) => {
 .dark-theme {
   --color-background: #1a1a1a; /* Darker background */
   --color-text: #e0e0e0;       /* Lighter text */
+  --color-heading: var(--color-text); /* Heading color in dark */
   --color-primary: #42b983;    /* Keep primary or adjust if needed */
   --color-nav-bg: #2c3e50;     /* Darker nav */
   --color-border: #3a3a3a;       /* Darker borders */
+  --color-border-hover: #4a4a4a; /* Darker hover border */
+  --color-border-hover-light: #2c2c2c; /* Darker subtle line for dark */
   --color-input-bg: #252525;
   --color-input-border: #454545;
+  --color-background-soft: #2c3e50; /* Soft background for dark - e.g., tooltip bg */
   --color-button-bg: #42b983;
   --color-button-text: #1a1a1a;
   --shadow-color: rgba(255,255,255,0.05);
-  --color-text-secondary: #aaa; /* Added for fallback cases - dark theme */
+  --color-text-secondary: #aaa;
 
   /* Nutrient Bar Colors - Dark Theme (can be same or adjusted) */
   --color-nutrient-bar-safe: #4CAF50;

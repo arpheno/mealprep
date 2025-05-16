@@ -1,153 +1,45 @@
 <template>
   <form @submit.prevent="submitMealPlan" class="meal-plan-form">
-    <div class="plan-header">
-      <h2>Create/Edit Meal Plan</h2>
-      <div class="plan-target-people">
-        <span 
-          v-for="person in selectedPeopleObjects" 
-          :key="person.id" 
-          class="person-circle"
-          :title="person.name"
-        >
-          {{ getProfileInitials(person.name) }}
-        </span>
-        <button 
-          type="button" 
-          @click="showPersonProfileSelector = !showPersonProfileSelector" 
-          class="add-person-btn"
-          title="Add person to plan"
-        >
-          +
-        </button>
-        <div v-if="showPersonProfileSelector" class="person-profile-selector">
-          <ul v-if="availablePeopleToAdd.length > 0">
-            <li 
-              v-for="person in availablePeopleToAdd" 
-              :key="person.id" 
-              @click="addPersonToPlan(person)"
-            >
-              {{ person.name }}
-            </li>
-          </ul>
-          <p v-else>No other person profiles available to add.</p>
-          <router-link to="/create-person-profile" class="create-profile-link">Create New Profile</router-link>
-        </div>
-      </div>
-    </div>
+    <PlanHeader 
+      :all-person-profiles="allPersonProfiles"
+      :selected-people="selectedPeopleObjects"
+      @add-person="handlePersonAdded"
+      @remove-person="handlePersonRemoved"
+    />
 
-    <div class="form-group">
-      <label for="plan-name">Plan Name:</label>
-      <input type="text" id="plan-name" v-model="planData.name" required />
-    </div>
-
-    <div class="form-group">
-      <label for="plan-description">Description:</label>
-      <textarea id="plan-description" v-model="planData.description"></textarea>
-    </div>
+    <PlanDetailsForm 
+      v-model:name="planData.name"
+      v-model:notes="planData.notes"
+      v-model:durationDays="planData.duration_days"
+      v-model:servingsPerDayPerPerson="planData.servings_per_day_per_person"
+    />
     
-    <div class="form-group">
-      <label for="duration-days">Duration (days):</label>
-      <input type="number" id="duration-days" v-model.number="planData.duration_days" min="1" />
-    </div>
-    
-    <div class="form-group">
-      <label for="servings-per-day">Servings per Day (per person):</label>
-      <input type="number" id="servings-per-day" v-model.number="planData.servings_per_day_per_person" min="1" />
-    </div>
-
     <hr />
 
-    <h3>Add Meal Components</h3>
-    <div class="component-search-section">
-      <div class="form-group">
-        <label for="component-filter">Filter Components:</label>
-        <input
-          type="text"
-          id="component-filter"
-          v-model="mealComponentSearch"
-          placeholder="Type to filter components..."
-          @input="() => { /* Input handled by computed property automatically */ }"
-        />
+    <MealComponentSearch 
+      :all-meal-components="allMealComponents"
+      :is-loading="isLoadingMealComponents"
+      :fetch-error="mealComponentsError"
+      @component-selected="addComponentToPlan"
+    />
 
-        <div v-if="allMealComponents.length > 0" class="component-tiles-container">
-          <div 
-            v-for="component in filteredMealComponents" 
-            :key="component.id" 
-            class="component-tile"
-            @click="addComponentToPlan(component)"
-            role="button"
-            tabindex="0"
-          >
-            <span class="tile-name">{{ component.name }}</span>
-            <span v-if="component.category_tag" class="tile-category">{{ component.category_tag }}</span>
-            <span v-if="component.frequency" class="tile-frequency">{{ component.frequency }}</span>
-          </div>
-        </div>
-
-        <p v-if="searchedAndNoResults && mealComponentSearch.length > 0" class="no-results-message">
-          No meal components match "{{ mealComponentSearch }}".
-        </p>
-        <p v-if="allMealComponents.length === 0 && !error" class="no-results-message">
-          No meal components available. Create some first!
-        </p>
-      </div>
-    </div>
-
-    <div v-if="addedMealComponents.length" class="added-components-list">
-      <h4>Added Meal Components:</h4>
-      <table>
-        <thead>
-          <tr>
-            <th>Component Name</th>
-            <th>Category</th>
-            <th>Frequency</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="componentInPlan in addedMealComponents" :key="componentInPlan.id">
-            <td>{{ componentInPlan.name }}</td>
-            <td>{{ componentInPlan.category_tag }}</td>
-            <td>{{ componentInPlan.frequency }}</td>
-            <td>
-              <button type="button" @click="removeComponentFromPlan(componentInPlan.id)" class="remove-btn">&times;</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <AddedMealComponentsDisplay 
+      :added-meal-components="addedMealComponents"
+      :selected-people-in-plan="selectedPeopleObjects"
+      @remove-component="removeComponentFromPlan"
+      @update:assignment="handleComponentAssignmentUpdate"
+    />
     
     <hr />
     
-    <!-- Nutritional Breakdown for the Plan -->
-    <div v-if="Object.keys(livePlanNutritionalBreakdown).length > 0" class="nutritional-breakdown-section plan-breakdown">
-      <h3>Live Plan Nutritional Breakdown (for {{ planData.duration_days }} days)</h3>
-      <table class="nutritional-breakdown-table">
-        <thead>
-          <tr>
-            <th>Nutrient</th>
-            <th>Total for Plan</th>
-            <th>Daily Average</th>
-            <th>RDA for Plan</th>
-            <th>UL for Plan</th>
-          </tr>
-        </thead>
-        <template v-for="(nutrientsInGroup, groupName) in livePlanNutritionalBreakdown" :key="groupName">
-          <tbody v-if="Object.keys(nutrientsInGroup).length > 0" class="nutrient-group">
-            <tr class="nutrient-group-header">
-              <th :colspan="5">{{ groupName }}</th>
-            </tr>
-            <tr v-for="(nutrientData, nutrientKey) in nutrientsInGroup" :key="nutrientKey" :style="getPlanNutrientBarStyle(nutrientData)" class="nutrient-data-row">
-              <td>{{ nutrientKey }}</td>
-              <td class="nutrient-value-cell">{{ nutrientData.total.toFixed(2) }}</td>
-              <td class="nutrient-value-cell">{{ (nutrientData.total / (planData.duration_days || 1)).toFixed(2) }}</td>
-              <td class="nutrient-value-cell">{{ formatDRV(nutrientData.rda !== null ? nutrientData.rda * (planData.duration_days || 1) : null) }}</td>
-              <td class="nutrient-value-cell">{{ formatDRV(nutrientData.ul !== null ? nutrientData.ul * (planData.duration_days || 1) : null) }}</td>
-            </tr>
-          </tbody>
-        </template>
-      </table>
-    </div>
+    <!-- Nutritional Breakdown Section - NOW A COMPONENT -->
+    <NutritionalBreakdown
+      :breakdownData="livePlanNutritionalBreakdown"
+      :activeView="activeBreakdownView"
+      @update:activeView="newVal => activeBreakdownView = newVal"
+      :selectedPeople="selectedPeopleObjects"
+      :planDurationDays="planData.duration_days"
+    />
 
     <div class="form-actions">
       <button type="submit" :disabled="isSaving">
@@ -162,15 +54,30 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
-import api from '../services/api.js';
+import {
+    KJ_TO_KCAL_CONVERSION_FACTOR,
+    KCAL_PER_GRAM_CARB,
+    KCAL_PER_GRAM_PROTEIN,
+    KCAL_PER_GRAM_FAT,
+    FDC_NUM_ENERGY,
+    FDC_NUM_PROTEIN,
+    FDC_NUM_FAT,
+    FDC_NUM_CARB,
+    MACRO_FDC_NUMBERS
+} from '../utils/nutritionConstants.js';
+import NutritionalBreakdown from './NutritionalBreakdown.vue'; // Import the new component
+import PlanHeader from './PlanHeader.vue'; // Import the new PlanHeader component
+import PlanDetailsForm from './PlanDetailsForm.vue'; // Import the new PlanDetailsForm component
+import MealComponentSearch from './MealComponentSearch.vue'; // Import the new MealComponentSearch component
+import AddedMealComponentsDisplay from './AddedMealComponentsDisplay.vue'; // Import the new component
 
 const API_BASE_URL = process.env.VUE_APP_API_BASE_URL || 'http://localhost:8000/api';
 
 const planData = ref({
   name: '',
-  description: '',
+  notes: '',
   duration_days: 7,
   servings_per_day_per_person: 1,
   target_people_ids: [],
@@ -179,19 +86,20 @@ const planData = ref({
   selected_person_profiles_in_form: [],
 });
 
-const allNutrients = ref([]);
 const allMealComponents = ref([]);
 const allPersonProfiles = ref([]);
-const showPersonProfileSelector = ref(false);
 
-const mealComponentSearch = ref('');
 const addedMealComponents = ref([]);
 const isSaving = ref(false);
 const error = ref(null);
+const isLoadingMealComponents = ref(false);
+const mealComponentsError = ref(null);
 
-const currentPlanTargets = ref({});
+const activeBreakdownView = ref('overall'); // 'overall' or a person_id
 
 onMounted(async () => {
+  isLoadingMealComponents.value = true;
+  mealComponentsError.value = null;
   try {
     const componentsResponse = await axios.get(`${API_BASE_URL}/mealcomponents/`);
     allMealComponents.value = componentsResponse.data.results || componentsResponse.data;
@@ -203,56 +111,56 @@ onMounted(async () => {
 
   } catch (err) {
     console.error('Error fetching initial data (components or profiles):', err);
-    error.value = 'Failed to load initial data. ' + (err.response?.data?.detail || err.message);
+    const errorMessage = 'Failed to load initial data. ' + (err.response?.data?.detail || err.message);
+    error.value = errorMessage; // Set general form error
+    mealComponentsError.value = 'Failed to load meal components.'; // Specific error for component search section
+  } finally {
+    isLoadingMealComponents.value = false;
   }
-});
-
-const filteredMealComponents = computed(() => {
-  if (!mealComponentSearch.value) {
-    return allMealComponents.value;
-  }
-  const searchTermLower = mealComponentSearch.value.toLowerCase();
-  const results = allMealComponents.value.filter(component => 
-    component.name.toLowerCase().includes(searchTermLower) ||
-    (component.category_tag && component.category_tag.toLowerCase().includes(searchTermLower))
-  );
-  return results;
-});
-
-const searchedAndNoResults = computed(() => {
-  return mealComponentSearch.value.length > 0 && filteredMealComponents.value.length === 0;
 });
 
 const selectedPeopleObjects = ref([]);
-const availablePeopleToAdd = computed(() => {
-  const selectedIds = new Set(planData.value.target_people_ids);
-  return allPersonProfiles.value.filter(p => !selectedIds.has(p.id));
-});
 
-const addPersonToPlan = (personProfile) => {
+const handlePersonAdded = (personProfile) => {
   if (!personProfile || !personProfile.id) {
-    console.error('Invalid person profile selected:', personProfile);
+    console.error('[MealPlanForm] Invalid person profile to add:', personProfile);
     return;
   }
-  if (!planData.value.selected_person_profiles_in_form.some(p => p.id === personProfile.id)) {
-    planData.value.selected_person_profiles_in_form.push(personProfile);
-    planData.value.target_people_profiles.push(personProfile.id);
+  if (!planData.value.target_people_ids.includes(personProfile.id)) {
     planData.value.target_people_ids.push(personProfile.id);
-    
+    // Ensure selectedPeopleObjects is also updated if it's not already there
     if (!selectedPeopleObjects.value.some(p => p.id === personProfile.id)) {
-        selectedPeopleObjects.value.push(allPersonProfiles.value.find(p => p.id === personProfile.id));
+        const profileFromAll = allPersonProfiles.value.find(p => p.id === personProfile.id);
+        if (profileFromAll) {
+            selectedPeopleObjects.value.push(profileFromAll);
+        } else {
+            console.warn("[MealPlanForm] Added person not found in allPersonProfiles. This shouldn't happen.", personProfile);
+            selectedPeopleObjects.value.push(personProfile); // Add what we received as a fallback
+        }
     }
+     // Ensure new person is assigned to existing components if they were previously unassigned to anyone specific
+    // OR if a global assignment strategy is desired upon adding a new person. Current logic assigns to all if selected.
+    addedMealComponents.value.forEach(item => {
+        if (!item.assigned_people_ids.includes(personProfile.id)) {
+            // Optional: automatically assign new person to items. For now, let's keep it manual or based on component add logic.
+            // item.assigned_people_ids.push(personProfile.id); 
+        }
+    });
   }
-  showPersonProfileSelector.value = false;
 };
 
-const getProfileInitials = (name) => {
-  if (!name) return '?';
-  const parts = name.split(' ');
-  if (parts.length > 1) {
-    return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+const handlePersonRemoved = (personProfile) => {
+  if (!personProfile || !personProfile.id) {
+    console.error('[MealPlanForm] Invalid person profile to remove:', personProfile);
+    return;
   }
-  return name.substring(0, 2).toUpperCase();
+  planData.value.target_people_ids = planData.value.target_people_ids.filter(id => id !== personProfile.id);
+  selectedPeopleObjects.value = selectedPeopleObjects.value.filter(p => p.id !== personProfile.id);
+
+  // Also remove this person from any component assignments
+  addedMealComponents.value.forEach(itemInPlan => {
+    itemInPlan.assigned_people_ids = itemInPlan.assigned_people_ids.filter(id => id !== personProfile.id);
+  });
 };
 
 const submitMealPlan = async () => {
@@ -263,14 +171,24 @@ const submitMealPlan = async () => {
   isSaving.value = true;
   error.value = null;
 
+  // Prepare plan_items_write from addedMealComponents
+  const planItemsToWrite = addedMealComponents.value.map(item => ({
+    meal_component_id: item.component.id,
+    assigned_people_ids: item.assigned_people_ids
+  }));
+
   const payload = {
     name: planData.value.name,
-    description: planData.value.description,
+    notes: planData.value.notes,
     duration_days: planData.value.duration_days,
     servings_per_day_per_person: planData.value.servings_per_day_per_person,
-    meal_component_ids: planData.value.meal_component_ids,
-    target_people_profiles: planData.value.target_people_ids,
+    target_people_ids: planData.value.target_people_ids, // Changed from target_people_profiles for consistency if backend expects IDs for the M2M
+    plan_items_write: planItemsToWrite // New field for backend
   };
+
+  // Ensure target_people_ids is what the backend expects for the MealPlan.target_people_profiles M2M.
+  // The MealPlanSerializer has `target_people_ids = PrimaryKeyRelatedField(source='target_people_profiles')`,
+  // so sending `target_people_ids` directly should be correct.
 
   try {
     const response = await axios.post(`${API_BASE_URL}/mealplans/`, payload);
@@ -286,11 +204,24 @@ const submitMealPlan = async () => {
 
 const getHardcodedNutrientGroup = (nutrientName, fdcNumber) => {
     const nameLower = nutrientName.toLowerCase();
-    if (["203", "204", "205", "291"].includes(fdcNumber)) return 'Macronutrients';
-    if (nameLower.includes('protein') || nameLower.includes('fat') || nameLower.includes('lipid') || 
-        nameLower.includes('carbohydrate') || nameLower.includes('fiber')) {
-      return 'Macronutrients';
+
+    // 1. Precise FDC Number checks - Prioritize Energy
+    if (fdcNumber) {
+        if (fdcNumber === FDC_NUM_ENERGY) { // Energy
+            return 'Energy';
+        }
+        if (MACRO_FDC_NUMBERS.includes(fdcNumber)) { // Protein, Fat, Carb
+            return 'Macronutrients';
+        }
+        // Note: FDC number for Fiber (e.g., "291") is not handled here by FDC number, 
+        // but will be caught by name-based checks below if applicable.
     }
+
+    // 2. Name-based checks for specific categories (Energy, Minerals, Vitamins)
+    if (nameLower.includes('energy')) { // Catch energy by name if FDC# was missing
+        return 'Energy';
+    }
+
     if (nameLower.includes('calcium') || nameLower.includes('iron') || nameLower.includes('magnesium') ||
         nameLower.includes('phosphorus') || nameLower.includes('potassium') || nameLower.includes('sodium') ||
         nameLower.includes('zinc') || nameLower.includes('copper') || nameLower.includes('manganese') ||
@@ -298,6 +229,7 @@ const getHardcodedNutrientGroup = (nutrientName, fdcNumber) => {
         nameLower.includes('chloride') || nameLower.includes('chromium') || nameLower.includes('molybdenum')) {
       return 'Minerals';
     }
+
     if (nameLower.includes('vitamin') || nameLower.includes('thiamin') || nameLower.includes('riboflavin') ||
         nameLower.includes('niacin') || nameLower.includes('folate') || nameLower.includes('choline') ||
         nameLower.includes('pantothenic') || nameLower.includes('biotin') || nameLower.includes('retinol') ||
@@ -307,197 +239,467 @@ const getHardcodedNutrientGroup = (nutrientName, fdcNumber) => {
         nameLower.includes('cholecalciferol') || nameLower.includes('cobalamin')) {
       return 'Vitamins';
     }
-    if (fdcNumber === "208" || nameLower.includes('energy') || nameLower.includes('water') || 
+
+    // 3. Name-based checks for items that belong to "General & Other"
+    // This includes Fiber explicitly.
+    if (nameLower.includes('fiber') || 
+        nameLower.includes('water') || 
         nameLower.includes('caffeine') || nameLower.includes('alcohol') || nameLower.includes('cholesterol') ||
         nameLower.includes('ash') || nameLower.includes('theobromine')) {
-      return 'General & Other';
+       return 'General & Other';
     }
+    
+    // 4. Default group for anything not categorized
     return 'General & Other';
 };
 
-const livePlanNutritionalBreakdown = computed(() => {
-  const groupedBreakdown = {
-    'Macronutrients': {},
-    'Minerals': {},
-    'Vitamins': {},
-    'General & Other': {}
+const derivedPlanTargets = computed(() => {
+  const combinedTargets = {};
+  const individualTargets = {};
+  let hasAnyRdaOrUl = false;
+
+  // Initialize combinedTargets with all system nutrients from the first available person's DRVs 
+  // or a fallback structure if no people are selected yet or if DRVs are sparse.
+  // This is a simplified approach; ideally, you'd have a base list of all possible nutrients.
+  // For now, we build it dynamically.
+  const allNutrientKeysInPlan = new Set();
+
+  selectedPeopleObjects.value.forEach(person => {
+    if (person.personalized_drvs) {
+      Object.keys(person.personalized_drvs).forEach(key => {
+        allNutrientKeysInPlan.add(key);
+      });
+    }
+  });
+
+  allNutrientKeysInPlan.forEach(key => {
+    combinedTargets[key] = { rda: 0, ul: null, unit: '', fdc_nutrient_number: null };
+  });
+
+
+  selectedPeopleObjects.value.forEach(person => {
+    individualTargets[person.id] = {};
+    if (person.personalized_drvs) {
+      // Store a deep copy for individual use to avoid unintended mutations if DRV objects are reused.
+      // Also, ensure all nutrients from combinedTargets are present for consistency.
+      allNutrientKeysInPlan.forEach(key => {
+        const drv = person.personalized_drvs[key];
+        individualTargets[person.id][key] = drv 
+            ? JSON.parse(JSON.stringify(drv)) 
+            : { rda: null, ul: null, unit: combinedTargets[key]?.unit || '', fdc_nutrient_number: combinedTargets[key]?.fdc_nutrient_number || null };
+      });
+      
+      // Aggregate for combined targets
+      for (const nutrientKey in person.personalized_drvs) {
+        const drv_values = person.personalized_drvs[nutrientKey];
+        if (!combinedTargets[nutrientKey]) { // Should be initialized above, but as a safeguard
+          combinedTargets[nutrientKey] = { rda: 0, ul: null, unit: drv_values.unit || '', fdc_nutrient_number: drv_values.fdc_nutrient_number || null };
+        } else { // Ensure unit and FDC number are set if missing from initial pass
+             if (!combinedTargets[nutrientKey].unit && drv_values.unit) combinedTargets[nutrientKey].unit = drv_values.unit;
+             if (!combinedTargets[nutrientKey].fdc_nutrient_number && drv_values.fdc_nutrient_number) combinedTargets[nutrientKey].fdc_nutrient_number = drv_values.fdc_nutrient_number;
+        }
+
+        if (drv_values.rda !== null && drv_values.rda !== undefined) {
+          combinedTargets[nutrientKey].rda += drv_values.rda;
+          hasAnyRdaOrUl = true;
+        }
+        if (drv_values.ul !== null && drv_values.ul !== undefined) {
+          hasAnyRdaOrUl = true;
+          if (combinedTargets[nutrientKey].ul === null || drv_values.ul < combinedTargets[nutrientKey].ul) {
+            combinedTargets[nutrientKey].ul = drv_values.ul;
+          }
+        }
+      }
+    } else {
+        // If a person has no personalized_drvs, ensure their entry exists with null/default values for all keys
+        allNutrientKeysInPlan.forEach(key => {
+            individualTargets[person.id][key] = { 
+                rda: null, 
+                ul: null, 
+                unit: combinedTargets[key]?.unit || '', 
+                fdc_nutrient_number: combinedTargets[key]?.fdc_nutrient_number || null 
+            };
+        });
+    }
+  });
+
+  // Filter out nutrients from combinedTargets that ended up with no RDA and no UL,
+  // unless they were present in at least one person's DRVs (even if values were null).
+  const finalCombinedTargets = {};
+  for (const key in combinedTargets) {
+    if ((combinedTargets[key].rda !== 0 && combinedTargets[key].rda !== null) || combinedTargets[key].ul !== null || allNutrientKeysInPlan.has(key)) {
+       finalCombinedTargets[key] = combinedTargets[key];
+    }
+  }
+  
+  // If no people, or no one has DRVs, combined targets will be empty or all zeros.
+  // If no RDAs/ULs at all, hasAnyRdaOrUl remains false.
+  // The structure expects `combined_plan_targets` and `individual_person_targets`.
+  return {
+    combined_plan_targets: (selectedPeopleObjects.value.length > 0 && hasAnyRdaOrUl) ? finalCombinedTargets : {},
+    individual_person_targets: individualTargets,
+    _debug_selected_people_count: selectedPeopleObjects.value.length,
+    _debug_has_any_rda_ul_overall: hasAnyRdaOrUl
   };
+});
 
-  const numPeople = planData.value.target_people_ids.length > 0 ? planData.value.target_people_ids.length : 1;
+const livePlanNutritionalBreakdown = computed(() => {
+  console.log('[MealPlanForm] Initializing livePlanNutritionalBreakdown. Selected People:', JSON.parse(JSON.stringify(selectedPeopleObjects.value)), 'Added Components:', JSON.parse(JSON.stringify(addedMealComponents.value)));
 
-  addedMealComponents.value.forEach(component => {
+  const result = {
+    overallSummary: {
+      'Energy': {},
+      'Macronutrients': {},
+      'Minerals': {},
+      'Vitamins': {},
+      'General & Other': {},
+      'NoReferenceValues': {}
+    },
+    perPersonBreakdown: {}
+  };
+  let totalPlanEnergyKcalOverall = 0; // For overall summary %E
+
+  result.perPersonBreakdown = {}; // Ensure it's initialized cleanly
+  selectedPeopleObjects.value.forEach(person => {
+    console.log(`[MealPlanForm] Initializing structure for person: ${person.name} (ID: ${person.id})`);
+    result.perPersonBreakdown[person.id] = {
+      personName: person.name,
+      total_energy_kcal_for_person: 0,
+      nutrientGroups: {
+        'Energy': {},
+        'Macronutrients': {},
+        'Minerals': {},
+        'Vitamins': {},
+        'General & Other': {},
+        'NoReferenceValues': {}
+      }
+    };
+  });
+  console.log('[MealPlanForm] Initialized perPersonBreakdown structure:', JSON.parse(JSON.stringify(result.perPersonBreakdown)));
+
+  addedMealComponents.value.forEach((itemInPlan, itemIndex) => {
+    console.log(`[MealPlanForm] Processing added component #${itemIndex}: ${itemInPlan.component.name}, Assigned to: ${JSON.stringify(itemInPlan.assigned_people_ids)}`);
+    const component = itemInPlan.component;
     if (!component.nutritional_totals || Object.keys(component.nutritional_totals).length === 0) {
-      console.warn(`Component ${component.name} (ID: ${component.id}) has no nutritional_totals. Skipping in plan breakdown.`);
-      return;
+        console.warn(`[MealPlanForm] Component ${component.name} has no nutritional_totals. Skipping.`);
+        return;
     }
 
-    let consumption_occasions_per_person = 0;
     const duration = planData.value.duration_days || 7;
     const servingsPerDayPerPerson = planData.value.servings_per_day_per_person || 1;
+    let consumption_multiplier_per_person = 0;
 
-    if (component.frequency === 'PER_BOX') {
-      consumption_occasions_per_person = duration * servingsPerDayPerPerson;
-    } else if (component.frequency === 'DAILY') {
-      consumption_occasions_per_person = duration;
-    } else if (component.frequency === 'WEEKLY') {
-      consumption_occasions_per_person = duration / 7.0;
-    } else {
-        console.warn(`Unknown component frequency: ${component.frequency} for component ${component.name}. Defaulting multiplier to 1.`);
-        consumption_occasions_per_person = 1;
-    }
+    if (component.frequency === 'PER_BOX') consumption_multiplier_per_person = duration * servingsPerDayPerPerson;
+    else if (component.frequency === 'DAILY') consumption_multiplier_per_person = duration;
+    else if (component.frequency === 'WEEKLY') consumption_multiplier_per_person = duration / 7.0;
+    else consumption_multiplier_per_person = 1; // Default, e.g. for ONE_TIME_CONSUMPTION or if frequency not set
 
     for (const nutrientFullName in component.nutritional_totals) {
       const nutrientNameMatch = nutrientFullName.match(/^(.*?) *\(/);
       const pureNutrientName = nutrientNameMatch ? nutrientNameMatch[1].trim() : nutrientFullName.trim();
-      
       const nutrientDataFromComponent = component.nutritional_totals[nutrientFullName];
-      const scaledAmount = (nutrientDataFromComponent.amount || 0) * consumption_occasions_per_person * numPeople;
-
-      const planTargetForNutrient = currentPlanTargets.value[pureNutrientName] || currentPlanTargets.value[nutrientFullName];
       
-      const baseNutrientInfo = allNutrients.value.find(n => n.name === pureNutrientName);
+      let nutrientAmountFromItemScaledByFreq = (nutrientDataFromComponent.amount || 0) * consumption_multiplier_per_person;
+      let unitForDisplay = nutrientDataFromComponent.unit || 'N/A';
       
-      const nutrientKey = `${pureNutrientName} (${nutrientDataFromComponent.unit || (baseNutrientInfo ? baseNutrientInfo.unit : 'N/A')})`;
-      const categorySource = planTargetForNutrient || baseNutrientInfo;
-      const categoryGroup = categorySource ? getHardcodedNutrientGroup(categorySource.name || pureNutrientName, categorySource.fdc_nutrient_number) : getHardcodedNutrientGroup(pureNutrientName, null);
-
-      if (!groupedBreakdown[categoryGroup][nutrientKey]) {
-        groupedBreakdown[categoryGroup][nutrientKey] = {
-          total: 0,
-          unit: nutrientDataFromComponent.unit || (categorySource ? categorySource.unit : 'N/A'),
-          rda: planTargetForNutrient ? planTargetForNutrient.rda : (baseNutrientInfo ? baseNutrientInfo.default_rda : null),
-          ul: planTargetForNutrient ? planTargetForNutrient.ul : (baseNutrientInfo ? baseNutrientInfo.upper_limit : null),
-        };
+      // Accessing COMBINED targets for OVERALL summary:
+      const overallPlanCombinedTargetData = derivedPlanTargets.value.combined_plan_targets || {};
+      const overallPlanCombinedTarget = overallPlanCombinedTargetData[pureNutrientName] || overallPlanCombinedTargetData[`${pureNutrientName} (${unitForDisplay})`];
+      
+      let fdcNumForData = (overallPlanCombinedTarget || {}).fdc_nutrient_number || null;
+      if (!fdcNumForData) { 
+        const nameLower = pureNutrientName.toLowerCase();
+        if (nameLower.includes('protein')) fdcNumForData = FDC_NUM_PROTEIN;
+        else if (nameLower.includes('carbohydrate')) fdcNumForData = FDC_NUM_CARB;
+        else if (nameLower.includes('total lipid') || nameLower.includes('total fat')) fdcNumForData = FDC_NUM_FAT;
+        else if (nameLower.includes('energy')) fdcNumForData = FDC_NUM_ENERGY;
       }
 
-      groupedBreakdown[categoryGroup][nutrientKey].total += scaledAmount;
+      let itemEnergyKcal = 0;
+      if (fdcNumForData === FDC_NUM_ENERGY) {
+        itemEnergyKcal = (unitForDisplay.toLowerCase() === 'kj') ? nutrientAmountFromItemScaledByFreq * KJ_TO_KCAL_CONVERSION_FACTOR : nutrientAmountFromItemScaledByFreq;
+        if (unitForDisplay.toLowerCase() === 'kj') unitForDisplay = 'kcal'; // Standardize display unit for energy
+        nutrientAmountFromItemScaledByFreq = itemEnergyKcal; // Use kcal amount for further calcs for energy
+      }
+      
+      let displayKeyName = pureNutrientName;
+      if (fdcNumForData === FDC_NUM_FAT && pureNutrientName.toLowerCase().includes("total lipid (fat)")) {
+        displayKeyName = "Total lipid";
+      }
+      const nutrientKey = `${displayKeyName} (${unitForDisplay})`;
+      let determinedOverallCategoryGroup = getHardcodedNutrientGroup(pureNutrientName, fdcNumForData);
+      
+      const overallRdaFromPlanTarget = overallPlanCombinedTarget?.rda;
+      const overallUlFromPlanTarget = overallPlanCombinedTarget?.ul;
+      const hasOverallReference = (overallRdaFromPlanTarget !== null && overallRdaFromPlanTarget !== undefined) || 
+                                (overallUlFromPlanTarget !== null && overallUlFromPlanTarget !== undefined);
+
+      if (!hasOverallReference && determinedOverallCategoryGroup !== 'Energy' && determinedOverallCategoryGroup !== 'Macronutrients') {
+        determinedOverallCategoryGroup = 'NoReferenceValues';
+      }
+      
+      if (!result.overallSummary[determinedOverallCategoryGroup]) result.overallSummary[determinedOverallCategoryGroup] = {};
+      if (!result.overallSummary[determinedOverallCategoryGroup][nutrientKey]) {
+        result.overallSummary[determinedOverallCategoryGroup][nutrientKey] = {
+          total: 0, unit: unitForDisplay, 
+          rda: overallRdaFromPlanTarget,
+          ul: overallUlFromPlanTarget,
+          fdc_nutrient_number: fdcNumForData,
+          kcal_contribution: 0, 
+          percent_energy: null 
+        };
+      }
+      
+      // Corrected logic for overall summary: sum the total produced by the component instance
+      result.overallSummary[determinedOverallCategoryGroup][nutrientKey].total += nutrientAmountFromItemScaledByFreq;
+      if (fdcNumForData === FDC_NUM_ENERGY) {
+         totalPlanEnergyKcalOverall += nutrientAmountFromItemScaledByFreq; // Use itemEnergyKcal if already calculated, or nutrientAmountFromItemScaledByFreq if energy
+      }
+
+      if (MACRO_FDC_NUMBERS.includes(fdcNumForData)) {
+        let kcalPerGram = 0;
+        if (fdcNumForData === FDC_NUM_CARB) kcalPerGram = KCAL_PER_GRAM_CARB;
+        else if (fdcNumForData === FDC_NUM_PROTEIN) kcalPerGram = KCAL_PER_GRAM_PROTEIN;
+        else if (fdcNumForData === FDC_NUM_FAT) kcalPerGram = KCAL_PER_GRAM_FAT;
+        result.overallSummary[determinedOverallCategoryGroup][nutrientKey].kcal_contribution += nutrientAmountFromItemScaledByFreq * kcalPerGram;
+      }
+
+      selectedPeopleObjects.value.forEach((person) => {
+        if (itemInPlan.assigned_people_ids.includes(person.id)) {
+          console.log(`[MealPlanForm] Component ${component.name} IS ASSIGNED to person ${person.name}. Processing nutrient: ${nutrientFullName}`);
+          
+          const numPeopleSharingThisItem = itemInPlan.assigned_people_ids.length;
+          let amountForThisPerson = 0;
+          if (numPeopleSharingThisItem > 0) {
+            amountForThisPerson = nutrientAmountFromItemScaledByFreq / numPeopleSharingThisItem;
+          } else {
+            // This case should ideally not happen if itemInPlan.assigned_people_ids.includes(person.id) is true
+            // and numPeopleSharingThisItem is derived from that same list.
+            // However, as a safeguard:
+            amountForThisPerson = 0; 
+          }
+          
+          let unitForPersonDisplay = unitForDisplay; // Assuming unit is same as overall for now
+
+          let currentPersonEnergyContribution = 0;
+          if (fdcNumForData === FDC_NUM_ENERGY) { // Energy would have been converted to kcal if originally kJ
+             currentPersonEnergyContribution = (unitForDisplay.toLowerCase() === 'kj' && nutrientDataFromComponent.unit.toLowerCase() === 'kj') 
+                                             ? (amountForThisPerson * KJ_TO_KCAL_CONVERSION_FACTOR) 
+                                             : amountForThisPerson;
+             if (unitForDisplay.toLowerCase() === 'kj') unitForPersonDisplay = 'kcal';
+             result.perPersonBreakdown[person.id].total_energy_kcal_for_person += currentPersonEnergyContribution;
+          }
+          
+          // REVISED LOGIC FOR PER-PERSON RDA/UL using individual_person_targets from derivedPlanTargets:
+          const individualTargetsForThisPerson = derivedPlanTargets.value.individual_person_targets?.[person.id] || {};
+
+          let personSpecificDRV = null;
+          if (Object.keys(individualTargetsForThisPerson).length > 0) {
+              personSpecificDRV = individualTargetsForThisPerson[nutrientKey] || 
+                                  individualTargetsForThisPerson[pureNutrientName] || 
+                                  individualTargetsForThisPerson[`${pureNutrientName} (${nutrientDataFromComponent.unit})`];
+              if (!personSpecificDRV && fdcNumForData) { // fdcNumForData here is from the overall combined target, might need person-specific if different
+                  const fdcNutrientNameKey = Object.keys(individualTargetsForThisPerson).find(k => individualTargetsForThisPerson[k]?.fdc_nutrient_number === fdcNumForData);
+                  if (fdcNutrientNameKey) personSpecificDRV = individualTargetsForThisPerson[fdcNutrientNameKey];
+              }
+          } else {
+            console.warn(`[MealPlanForm] No individual_person_targets found for person ${person.name} (ID: ${person.id}). Individual targets object for this person:`, JSON.parse(JSON.stringify(individualTargetsForThisPerson)), 'Full individual_person_targets state:', JSON.parse(JSON.stringify(derivedPlanTargets.value.individual_person_targets)));
+          }
+          
+          // --- BEGIN DEBUG LOG ---
+          if (pureNutrientName.toLowerCase().includes('energy')) { // Log only for energy to reduce noise
+            console.log(`[MealPlanForm DEBUG] For ${person.name}, Nutrient: ${nutrientKey}`);
+            console.log(`  Raw personSpecificDRV (daily):`, JSON.parse(JSON.stringify(personSpecificDRV)));
+            console.log(`  derivedPlanTargets.individual_person_targets for ${person.name}:`, JSON.parse(JSON.stringify(derivedPlanTargets.value.individual_person_targets?.[person.id])));
+          }
+          // --- END DEBUG LOG ---
+
+          let personDailyRda = personSpecificDRV ? personSpecificDRV.rda : null;
+          let personDailyUl = personSpecificDRV ? personSpecificDRV.ul : null;
+          
+          let personFdcNumToUse = personSpecificDRV?.fdc_nutrient_number || fdcNumForData; 
+
+          if (personFdcNumToUse === FDC_NUM_ENERGY && unitForPersonDisplay.toLowerCase() === 'kcal' && personSpecificDRV && personSpecificDRV.unit && personSpecificDRV.unit.toLowerCase() === 'kj') {
+              if (personDailyRda !== null) personDailyRda *= KJ_TO_KCAL_CONVERSION_FACTOR;
+              if (personDailyUl !== null) personDailyUl *= KJ_TO_KCAL_CONVERSION_FACTOR;
+          }
+          
+          // Multiply daily RDA and UL by plan duration for this person
+          const planDurationDays = planData.value.duration_days || 1; // Default to 1 if duration is 0 or undefined
+          
+          // NEW logic (assuming personDailyRda/Ul are already effectively plan totals based on user feedback):
+          const personRdaForPlanDuration = personDailyRda;
+          const personUlForPlanDuration = personDailyUl;
+
+          console.log(`[MealPlanForm DEBUG DRV] Person: ${person.name}, Nutrient: ${nutrientKey}`);
+          console.log(`  planData.duration_days (source): ${planData.value.duration_days}`);
+          console.log(`  planDurationDays (used for scaling): ${planDurationDays}`);
+          console.log(`  personDailyRda: ${personDailyRda}, personDailyUl: ${personDailyUl}`);
+          console.log(`  personRdaForPlanDuration: ${personRdaForPlanDuration}, personUlForPlanDuration: ${personUlForPlanDuration}`);
+
+          let determinedPersonCategoryGroup = getHardcodedNutrientGroup(pureNutrientName, personFdcNumToUse);
+          const hasPersonReference = (personRdaForPlanDuration !== null && personRdaForPlanDuration !== undefined) || 
+                                   (personUlForPlanDuration !== null && personUlForPlanDuration !== undefined);
+
+          if (!hasPersonReference && determinedPersonCategoryGroup !== 'Energy' && determinedPersonCategoryGroup !== 'Macronutrients') {
+            determinedPersonCategoryGroup = 'NoReferenceValues';
+          }
+          
+          const personNutrientKeyForStorage = nutrientKey; 
+
+          if (!result.perPersonBreakdown[person.id].nutrientGroups[determinedPersonCategoryGroup]) {
+             result.perPersonBreakdown[person.id].nutrientGroups[determinedPersonCategoryGroup] = {};
+          }
+          if (!result.perPersonBreakdown[person.id].nutrientGroups[determinedPersonCategoryGroup][personNutrientKeyForStorage]) {
+            result.perPersonBreakdown[person.id].nutrientGroups[determinedPersonCategoryGroup][personNutrientKeyForStorage] = {
+              total: 0, unit: unitForPersonDisplay,
+              rda: personRdaForPlanDuration, // Use plan duration RDA
+              ul: personUlForPlanDuration,   // Use plan duration UL
+              fdc_nutrient_number: personFdcNumToUse,
+              kcal_contribution: 0, percent_energy: null // Add for per-person macros
+            };
+          }
+          result.perPersonBreakdown[person.id].nutrientGroups[determinedPersonCategoryGroup][personNutrientKeyForStorage].total += amountForThisPerson;
+          
+          if (MACRO_FDC_NUMBERS.includes(personFdcNumToUse)) {
+            let kcalPerGram = 0;
+            if (personFdcNumToUse === FDC_NUM_CARB) kcalPerGram = KCAL_PER_GRAM_CARB;
+            else if (personFdcNumToUse === FDC_NUM_PROTEIN) kcalPerGram = KCAL_PER_GRAM_PROTEIN;
+            else if (personFdcNumToUse === FDC_NUM_FAT) kcalPerGram = KCAL_PER_GRAM_FAT;
+            // Use amountForThisPerson for kcal_contribution
+            result.perPersonBreakdown[person.id].nutrientGroups[determinedPersonCategoryGroup][personNutrientKeyForStorage].kcal_contribution += amountForThisPerson * kcalPerGram;
+          }
+          // console.log(`[MealPlanForm] For ${person.name}, Nutrient ${nutrientKey}: RDA = ${personRdaForPlanDuration}, UL = ${personUlForPlanDuration}`); // Original log, now updated
+        }
+      });
     }
   });
   
-  const finalBreakdown = {};
-  for (const groupName in groupedBreakdown) {
-    const group = groupedBreakdown[groupName];
-    const filteredGroupNutrients = {};
-    let groupHasNutrients = false;
-
-    for (const nutrientKey in group) {
-      group[nutrientKey].total = parseFloat(group[nutrientKey].total.toFixed(2));
-      if (group[nutrientKey].total > 0 || group[nutrientKey].rda !== null) {
-        filteredGroupNutrients[nutrientKey] = group[nutrientKey];
-        groupHasNutrients = true;
+  if (totalPlanEnergyKcalOverall > 0 && result.overallSummary['Macronutrients']) {
+    for (const nutrientKey in result.overallSummary['Macronutrients']) {
+      const macroData = result.overallSummary['Macronutrients'][nutrientKey];
+      if (MACRO_FDC_NUMBERS.includes(macroData.fdc_nutrient_number) && macroData.kcal_contribution > 0) {
+        macroData.percent_energy = (macroData.kcal_contribution / totalPlanEnergyKcalOverall) * 100;
       }
     }
-    if (groupHasNutrients) {
-      finalBreakdown[groupName] = filteredGroupNutrients;
-    }
   }
-  return finalBreakdown;
+
+  // Calculate %E for per-person Macronutrients
+  selectedPeopleObjects.value.forEach(person => {
+    const personData = result.perPersonBreakdown[person.id];
+    if (personData.total_energy_kcal_for_person > 0 && personData.nutrientGroups['Macronutrients']) {
+      for (const nutrientKey in personData.nutrientGroups['Macronutrients']) {
+        const macroData = personData.nutrientGroups['Macronutrients'][nutrientKey];
+        if (MACRO_FDC_NUMBERS.includes(macroData.fdc_nutrient_number) && macroData.kcal_contribution > 0) {
+          macroData.percent_energy = (macroData.kcal_contribution / personData.total_energy_kcal_for_person) * 100;
+        }
+      }
+    }
+  });
+
+  // DEBUG: Log per-person breakdown before cleanup
+  console.log('[MealPlanForm] Per-Person Breakdown (Before Cleanup):', JSON.parse(JSON.stringify(result.perPersonBreakdown)));
+
+  // Clean up totals and remove empty groups
+  ['overallSummary', 'perPersonBreakdown'].forEach(summaryType => {
+    const summaryObject = summaryType === 'overallSummary' ? result.overallSummary : null;
+    const processGroups = (groupsObject) => {
+        for (const groupName in groupsObject) {
+            let groupHasNutrients = false;
+            if (groupName === 'NoReferenceValues' && Object.keys(groupsObject[groupName]).length === 0) {
+                delete groupsObject[groupName]; // Remove NoReferenceValues if empty
+                return;
+            }
+            for (const nutrientKey in groupsObject[groupName]) {
+                groupsObject[groupName][nutrientKey].total = parseFloat(groupsObject[groupName][nutrientKey].total.toFixed(2));
+                // Keep group if it has nutrients, or if it's NoReferenceValues and has entries.
+                if (groupsObject[groupName][nutrientKey].total > 0 || 
+                    (groupsObject[groupName][nutrientKey].rda !== null && groupsObject[groupName][nutrientKey].rda !== undefined) || 
+                    (groupName === 'NoReferenceValues' && Object.keys(groupsObject[groupName]).length > 0)) {
+                    groupHasNutrients = true;
+                }
+            }
+            if (!groupHasNutrients && groupName !== 'NoReferenceValues') { // Don't delete NoReferenceValues here if it was initially populated
+                delete groupsObject[groupName];
+            } else if (!groupHasNutrients && groupName === 'NoReferenceValues' && Object.keys(groupsObject[groupName]).length === 0) {
+                 delete groupsObject[groupName]; // Ensure empty NoReferenceValues is removed
+            }
+        }
+    };
+
+    if (summaryObject) {
+        processGroups(summaryObject);
+    } else if (summaryType === 'perPersonBreakdown') {
+        for (const personId in result.perPersonBreakdown) {
+            processGroups(result.perPersonBreakdown[personId].nutrientGroups);
+        }
+    }
+  });
+
+  // DEBUG: Log final result of livePlanNutritionalBreakdown
+  console.log('[MealPlanForm] Final livePlanNutritionalBreakdown result:', JSON.parse(JSON.stringify(result)));
+
+  return result;
 });
 
-const formatDRV = (value) => {
-  if (value === null || value === undefined) return '-';
-  if (typeof value === 'number') return Number.isInteger(value) ? value : value.toFixed(2);
-  return value;
-};
-
-const getPlanNutrientBarStyle = (nutrientData) => {
-  const totalForDuration = nutrientData.total;
-  const dailyRda = nutrientData.rda;
-  const dailyUl = nutrientData.ul;
-  const planDuration = planData.value.duration_days || 1;
-
-  const rdaForDuration = dailyRda !== null ? dailyRda * planDuration : null;
-  const ulForDuration = dailyUl !== null ? dailyUl * planDuration : null;
-  
-  let percentage = 0;
-  if (rdaForDuration && rdaForDuration > 0) {
-    percentage = (totalForDuration / rdaForDuration) * 100;
-  }
-
-  const baseGreenH = 120; 
-  const baseGreenS = 50;  
-  const baseGreenL = 60;  
-  const targetGreenS = 70; 
-  const targetGreenL = 50; 
-  const dangerColor = 'var(--color-nutrient-bar-danger)';
-  let currentBackgroundColor = 'transparent';
-
-  if (ulForDuration && ulForDuration > 0 && totalForDuration > ulForDuration) {
-    currentBackgroundColor = dangerColor;
-  } else if (rdaForDuration && rdaForDuration > 0) {
-    if (totalForDuration >= 0) {
-      const saturationRatio = Math.min(percentage / 100, 1);
-      const currentS = baseGreenS + (targetGreenS - baseGreenS) * saturationRatio;
-      const currentL = baseGreenL - (baseGreenL - targetGreenL) * saturationRatio;
-      currentBackgroundColor = `hsl(${baseGreenH}, ${currentS.toFixed(0)}%, ${currentL.toFixed(0)}%)`;
-    }
-  } else if (totalForDuration > 0) {
-    if (ulForDuration && ulForDuration > 0 && totalForDuration > ulForDuration) {
-      currentBackgroundColor = dangerColor;
-    } else {
-      currentBackgroundColor = `hsl(${baseGreenH}, ${baseGreenS * 0.5}%, ${baseGreenL * 1.1}%)`;
-    }
-  }
-
-  if (totalForDuration === 0 && (!rdaForDuration || rdaForDuration === 0)) {
-    return { background: 'transparent' };
-  }
-   if ((!rdaForDuration || rdaForDuration <= 0) && totalForDuration > 0 ) {
-      if (ulForDuration && ulForDuration > 0 && totalForDuration > ulForDuration) {
-          return { background: dangerColor };
-      }
-      return { background: `linear-gradient(to right, ${currentBackgroundColor} 15px, var(--color-input-bg) 15px)` };
-  }
-
-  const visualProgressPercentage = Math.max(0, Math.min(percentage, 100));
-  return {
-    background: `linear-gradient(to right, ${currentBackgroundColor} ${visualProgressPercentage}%, color-mix(in srgb, ${currentBackgroundColor} 20%, transparent) ${Math.min(100, visualProgressPercentage + 5)}%, transparent ${Math.min(100, visualProgressPercentage + 10)}%)`,
-    transition: 'background 0.5s ease',
-  };
-};
-
-const fetchPlanNutritionalTargets = async (personProfileIds) => {
-  if (!personProfileIds || personProfileIds.length === 0) {
-    currentPlanTargets.value = {};
+const addComponentToPlan = (componentToAdd) => {
+  if (!componentToAdd || !componentToAdd.id) {
+    console.error('[MealPlanForm] Invalid component to add:', componentToAdd);
     return;
   }
-  try {
-    const response = await api.post('/calculate-nutritional-targets/', { person_profile_ids: personProfileIds });
-    currentPlanTargets.value = response.data;
-  } catch (error) {
-    console.error('Error fetching plan nutritional targets:', error);
-    currentPlanTargets.value = {};
-  }
-};
-
-watch(() => planData.value.target_people_ids, (newVal) => {
-  fetchPlanNutritionalTargets(newVal);
-}, { deep: true, immediate: true });
-
-const addComponentToPlan = (component) => {
-  if (!component || !component.id) {
-    console.error('Invalid component to add:', component);
-    return;
-  }
-  const alreadyAdded = addedMealComponents.value.some(c => c.id === component.id);
+  const alreadyAdded = addedMealComponents.value.some(item => item.component.id === componentToAdd.id);
   if (!alreadyAdded) {
-    addedMealComponents.value.push(component);
+    addedMealComponents.value.push({
+      id: Date.now() + Math.random(),
+      component: componentToAdd, 
+      assigned_people_ids: [...planData.value.target_people_ids]
+    });
+    console.log('[MealPlanForm] Component added:', componentToAdd.name, 'Current addedMealComponents:', JSON.parse(JSON.stringify(addedMealComponents.value)));
   } else {
-    console.warn('Component already added:', component.name);
+    console.warn('[MealPlanForm] Component already added:', componentToAdd.name);
   }
 };
 
-const removeComponentFromPlan = (componentId) => {
-  addedMealComponents.value = addedMealComponents.value.filter(c => c.id !== componentId);
+const removeComponentFromPlan = (componentIdToRemove) => {
+  const initialLength = addedMealComponents.value.length;
+  addedMealComponents.value = addedMealComponents.value.filter(item => item.component.id !== componentIdToRemove);
+  if (addedMealComponents.value.length < initialLength) {
+    console.log('[MealPlanForm] Component removed. Current addedMealComponents:', JSON.parse(JSON.stringify(addedMealComponents.value)));
+  } else {
+    console.warn('[MealPlanForm] Attempted to remove component, but it was not found or list unchanged.');
+  }
 };
 
-watch(addedMealComponents, (newComponents) => {
-  planData.value.meal_component_ids = newComponents.map(c => c.id);
-}, { deep: true });
+const handleComponentAssignmentUpdate = ({ itemInPlanId, newAssignedIds }) => {
+  const itemIndex = addedMealComponents.value.findIndex(item => item.id === itemInPlanId);
+  if (itemIndex !== -1) {
+    addedMealComponents.value[itemIndex].assigned_people_ids = newAssignedIds;
+    console.log('[MealPlanForm] Updated assignments for item:', addedMealComponents.value[itemIndex].component.name, 'New assignments:', newAssignedIds);
+  } else {
+    console.warn('[MealPlanForm] Could not find itemInPlan to update assignments for ID:', itemInPlanId);
+  }
+};
 
 </script>
 
 <style scoped>
+/* Add these to your CSS variables elsewhere or define them here */
+:root {
+  --color-nutrient-bar-low: #ffe0b2; /* Light Orange/Peach for low %E */
+  --color-nutrient-bar-high: #ffcdd2; /* Light Red/Pink for high %E */
+  --color-nutrient-bar-good: #c8e6c9; /* Softer Light Green for good %E */
+  --color-background-mute: #3a3a3a;  /* Default Muted Background (Dark Gray) */
+  --color-text-secondary: #cccccc;   /* Default Text for Muted Background (Light Gray) */
+  --color-nutrient-bar-danger: #f8d7da; /* For UL violations (from getPlanNutrientBarStyle) */
+  --color-text-dark: #2c3e50; /* Darker text for better contrast on light backgrounds */
+}
+
+/* Ensure nutrient-data-row can have its background changed by :style binding */
+.nutrient-data-row {
+  /* If you have existing background-color here, it might be overridden by the :style binding.
+     Ensure specificity or remove if not needed. */
+}
+
 .meal-plan-form {
   display: flex;
   flex-direction: column;
@@ -615,27 +817,121 @@ h2, h3, h4 {
   text-align: center;
   width: 100%;
 }
-.added-components-list table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-.added-components-list th,
-.added-components-list td {
+.added-components-section {
+  margin-top: 20px;
+  padding: 15px;
   border: 1px solid var(--color-border);
-  padding: 8px;
-  text-align: left;
-  color: var(--color-text);
+  border-radius: 4px;
+  background-color: var(--color-background-soft);
 }
-.added-components-list th {
-  background-color: var(--color-input-bg);
+.added-components-tiles-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  padding: 10px;
+  border: 1px solid var(--color-border-hover);
+  border-radius: 4px;
+  background-color: var(--color-background-mute);
+  min-height: 120px;
 }
-.remove-btn {
-  background: transparent;
+.added-component-tile {
+  background-color: var(--color-background-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 15px;
+  width: calc(50% - 10px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.07);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+@media (max-width: 768px) {
+  .added-component-tile {
+    width: calc(100% - 10px);
+  }
+}
+.remove-component-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--color-danger, #e74c3c);
+  color: white;
   border: none;
-  color: var(--color-danger, #e74c3c);
-  font-size: 1.2em;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 22px;
+  text-align: center;
   cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: background-color 0.2s ease;
+}
+.remove-component-btn:hover {
+  background-color: var(--color-danger-dark, #c0392b);
+}
+.component-tile-header .tile-name {
+  font-weight: bold;
+  font-size: 1.1em;
+  color: var(--color-heading);
+  margin-bottom: 5px;
+}
+.component-tile-details {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.component-tile-details .tile-category,
+.component-tile-details .tile-frequency {
+  font-size: 0.8em;
+  color: var(--color-text-secondary);
+  background-color: var(--color-background-mute);
+  padding: 3px 7px;
+  border-radius: 4px;
+}
+.person-assignment-section h5 {
+  font-size: 0.9em;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+  font-weight: normal;
+}
+.person-assignment-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 100px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+.person-checkbox-label {
+  display: flex;
+  align-items: center;
+  font-size: 0.9em;
+  color: var(--color-text);
+  cursor: pointer;
+}
+.person-checkbox-label input[type="checkbox"] {
+  margin-right: 8px;
+  cursor: pointer;
+}
+.person-checkbox-label input[type="checkbox"]:checked {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.person-checkbox-label input[type="checkbox"]:checked:hover {
+  background-color: var(--color-primary-dark);
+}
+.no-people-in-plan-message {
+  font-size: 0.85em;
+  color: var(--color-text-secondary);
+  font-style: italic;
 }
 .form-actions {
   margin-top: 20px;
@@ -796,4 +1092,57 @@ h2, h3, h4 {
 .create-profile-link:hover {
   background-color: var(--color-primary-dark);
 }
+
+/* Tabs for breakdown */
+.breakdown-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 10px;
+}
+.breakdown-tabs button {
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-background-soft);
+  color: var(--color-text);
+  cursor: pointer;
+  border-radius: 4px 4px 0 0;
+  font-size: 0.9em;
+  margin-bottom: -1px; /* Overlap border-bottom */
+}
+.breakdown-tabs button.active {
+  background-color: var(--color-background);
+  border-bottom-color: var(--color-background);
+  font-weight: bold;
+  color: var(--color-primary);
+}
+.breakdown-tabs button:hover:not(.active) {
+  background-color: var(--color-background-mute);
+}
+.breakdown-content h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.no-reference-table {
+  margin-top: 25px;
+  font-size: 0.9em; /* Slightly smaller font */
+}
+.no-reference-table th,
+.no-reference-table td {
+  padding: 6px 8px; /* Adjust padding */
+  color: var(--color-text-secondary); /* Muted text color */
+}
+.no-reference-table th {
+   background-color: var(--color-input-bg); /* Consistent header background */
+}
+.no-reference-table .nutrient-data-row {
+    background-color: var(--color-background-mute); /* Muted background for rows */
+}
+.no-reference-table .nutrient-value-cell {
+    text-align: right;
+}
+
 </style> 

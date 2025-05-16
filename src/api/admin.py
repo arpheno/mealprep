@@ -72,7 +72,7 @@ class MealPlanAdmin(admin.ModelAdmin):
     list_display = ('name', 'duration_days', 'servings_per_day_per_person', 'creation_date', 'last_modified_date')
     list_filter = ('duration_days', 'creation_date')
     search_fields = ('name', 'description', 'notes')
-    filter_horizontal = ('target_people_profiles', 'meal_components') # Good for M2M
+    filter_horizontal = ('target_people_profiles',)
     readonly_fields = ('creation_date', 'last_modified_date')
 
 # If you want to see the through models directly in admin (optional):

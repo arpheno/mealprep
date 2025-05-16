@@ -1,0 +1,178 @@
+[
+  {
+    "fdcId": -1,
+    "description": "Tofu, raw",
+    "foodClass": "Custom",
+    "foodCategory": {
+      "description": "Custom Foods",
+      "code": "9999", 
+      "id": -1 
+    },
+    "foodNutrients": [
+      {
+        "nutrient": {"id": 1051, "number": "255", "name": "Water", "rank": 100, "unitName": "g"},
+        "amount": 84.6
+      },
+      {
+        "nutrient": {"id": 1008, "number": "208", "name": "Energy", "rank": 300, "unitName": "kcal"},
+        "amount": 137.0
+      },
+      {
+        "nutrient": {"id": 1003, "number": "203", "name": "Protein", "rank": 600, "unitName": "g"},
+        "amount": 15.0
+      },
+      {
+        "nutrient": {"id": 1004, "number": "204", "name": "Total lipid (fat)", "rank": 800, "unitName": "g"},
+        "amount": 8.0
+      },
+      {
+        "nutrient": {"id": 1007, "number": "207", "name": "Ash", "rank": 1000, "unitName": "g"},
+        "amount": 0.72
+      },
+      {
+        "nutrient": {"id": 1005, "number": "205", "name": "Carbohydrate, by difference", "rank": 1110, "unitName": "g"},
+        "amount": 0.7
+      },
+      {
+        "nutrient": {"id": 1079, "number": "291", "name": "Fiber, total dietary", "rank": 1200, "unitName": "g"},
+        "amount": 1.0
+      },
+      {
+        "nutrient": {"id": 2000, "number": "269", "name": "Sugars, total including NLEA", "rank": 1510, "unitName": "g"},
+        "amount": 0.5
+      },
+      {
+        "nutrient": {"id": 1087, "number": "301", "name": "Calcium, Ca", "rank": 5300, "unitName": "mg"},
+        "amount": 350
+      },
+      {
+        "nutrient": {"id": 1089, "number": "303", "name": "Iron, Fe", "rank": 5400, "unitName": "mg"},
+        "amount": 5.36
+      },
+      {
+        "nutrient": {"id": 1090, "number": "304", "name": "Magnesium, Mg", "rank": 5500, "unitName": "mg"},
+        "amount": 30
+      },
+      {
+        "nutrient": {"id": 1091, "number": "305", "name": "Phosphorus, P", "rank": 5600, "unitName": "mg"},
+        "amount": 97
+      },
+      {
+        "nutrient": {"id": 1092, "number": "306", "name": "Potassium, K", "rank": 5700, "unitName": "mg"},
+        "amount": 121
+      },
+      {
+        "nutrient": {"id": 1093, "number": "307", "name": "Sodium, Na", "rank": 5800, "unitName": "mg"},
+        "amount": 7
+      },
+      {
+        "nutrient": {"id": 1095, "number": "309", "name": "Zinc, Zn", "rank": 5900, "unitName": "mg"},
+        "amount": 0.8
+      },
+      {
+        "nutrient": {"id": 1098, "number": "312", "name": "Copper, Cu", "rank": 6000, "unitName": "mg"},
+        "amount": 0.193
+      },
+      {
+        "nutrient": {"id": 1101, "number": "315", "name": "Manganese, Mn", "rank": 6100, "unitName": "mg"},
+        "amount": 0.605
+      },
+      {
+        "nutrient": {"id": 1103, "number": "317", "name": "Selenium, Se", "rank": 6200, "unitName": "µg"},
+        "amount": 8.9
+      },
+      {
+        "nutrient": {"id": 1162, "number": "401", "name": "Vitamin C, total ascorbic acid", "rank": 6300, "unitName": "mg"},
+        "amount": 0.1
+      },
+      {
+        "nutrient": {"id": 1165, "number": "404", "name": "Thiamin", "rank": 6400, "unitName": "mg"},
+        "amount": 0.081
+      },
+      {
+        "nutrient": {"id": 1166, "number": "405", "name": "Riboflavin", "rank": 6500, "unitName": "mg"},
+        "amount": 0.052
+      },
+      {
+        "nutrient": {"id": 1167, "number": "406", "name": "Niacin", "rank": 6600, "unitName": "mg"},
+        "amount": 0.195
+      },
+      {
+        "nutrient": {"id": 1170, "number": "410", "name": "Pantothenic acid", "rank": 6700, "unitName": "mg"},
+        "amount": 0.068
+      },
+      {
+        "nutrient": {"id": 1175, "number": "415", "name": "Vitamin B-6", "rank": 6800, "unitName": "mg"},
+        "amount": 0.047
+      },
+      {
+        "nutrient": {"id": 1185, "number": "435", "name": "Folate, DFE", "rank": 7100, "unitName": "µg"},
+        "amount": 15
+      },
+      {
+        "nutrient": {"id": 1186, "number": "437", "name": "Choline, total", "rank": 7110, "unitName": "mg"},
+        "amount": 28.8
+      },
+      {
+        "nutrient": {"id": 1178, "number": "418", "name": "Vitamin B-12", "rank": 7300, "unitName": "µg"},
+        "amount": 0
+      },
+      {
+        "nutrient": {"id": 1104, "number": "318", "name": "Vitamin A, IU", "rank": 7410, "unitName": "IU"},
+        "amount": 85
+      },
+      {
+        "nutrient": {"id": 1109, "number": "323", "name": "Vitamin E", "rank": 7900, "unitName": "mg"},
+        "amount": 0.01
+      },
+      {
+        "nutrient": {"id": 1187, "number": "430", "name": "Vitamin K", "rank": 8800, "unitName": "µg"},
+        "amount": 2.4
+      },
+      {
+        "nutrient": {"id": 1258, "number": "606", "name": "Fatty acids, total saturated", "rank": 9700, "unitName": "g"},
+        "amount": 0.691
+      },
+      {
+        "nutrient": {"id": 1264, "number": "612", "name": "SFA 14:0", "rank": 10500, "unitName": "g"},
+        "amount": 0.013
+      },
+      {
+        "nutrient": {"id": 1265, "number": "613", "name": "SFA 16:0", "rank": 10700, "unitName": "g"},
+        "amount": 0.507
+      },
+      {
+        "nutrient": {"id": 1266, "number": "614", "name": "SFA 18:0", "rank": 10900, "unitName": "g"},
+        "amount": 0.171
+      },
+      {
+        "nutrient": {"id": 1292, "number": "645", "name": "Fatty acids, total monounsaturated", "rank": 11400, "unitName": "g"},
+        "amount": 1.06
+      },
+      {
+        "nutrient": {"id": 1293, "number": "646", "name": "Fatty acids, total polyunsaturated", "rank": 12900, "unitName": "g"},
+        "amount": 2.7
+      }
+    ],
+    "foodPortions": [
+      {
+        "id": -101, 
+        "amount": 0.5,
+        "gramWeight": 124.0,
+        "modifier": null,
+        "portionDescription": "0.5 cup",
+        "sequenceNumber": 1,
+        "measureUnit": {"id": -10101, "name": "cup", "abbreviation": "cup"}
+      },
+      {
+        "id": -102,
+        "amount": 0.25,
+        "gramWeight": 116.0,
+        "modifier": null,
+        "portionDescription": "0.25 block",
+        "sequenceNumber": 2,
+        "measureUnit": {"id": -10102, "name": "block", "abbreviation": "block"}
+      }
+    ]
+  }
+] 

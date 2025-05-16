@@ -88,11 +88,10 @@ class Command(BaseCommand):
                     self.stdout.write(f'Updated Ingredient: "{description}" (FDC ID: {fdc_id_food})')
                 else: # Not created and not updating existing
                     self.stdout.write(f'Skipped existing Ingredient: "{description}" (FDC ID: {fdc_id_food})')
-                    continue 
+                    continue
             except Exception as e:
                 self.stderr.write(self.style.ERROR(f'Error processing ingredient {fdc_id_food} ("{description}"): {e}'))
                 continue
-
 
             if not created_ingredient and update_existing:
                 IngredientNutrientLink.objects.filter(ingredient=ingredient_obj).delete()

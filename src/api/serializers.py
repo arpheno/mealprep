@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Nutrient, Ingredient, IngredientNutrientLink, PersonProfile, MealComponent, IngredientUsage, MealPlan, FoodPortion, DietaryReferenceValue
+from .models import Nutrient, Ingredient, IngredientNutrientLink, PersonProfile, MealComponent, IngredientUsage, MealPlan, FoodPortion, DietaryReferenceValue, MealPlanItem
 
 class NutrientSerializer(serializers.ModelSerializer):
     default_rda = serializers.SerializerMethodField()
@@ -25,13 +25,17 @@ class IngredientNutrientLinkSerializer(serializers.ModelSerializer):
     # Add back default RDA and UL, sourced from the Nutrient model's methods
     default_rda = serializers.SerializerMethodField()
     upper_limit = serializers.SerializerMethodField()
+    # Make ingredient writable for direct creation/update via IngredientNutrientLinkViewSet
+    ingredient = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
+    # Nutrient is already a writable FK by default if included in fields
+    nutrient = serializers.PrimaryKeyRelatedField(queryset=Nutrient.objects.all()) # Ensure nutrient is also explicitly writable
 
     class Meta:
         model = IngredientNutrientLink
         fields = [
-            'nutrient', 'nutrient_name', 'nutrient_unit', 'fdc_nutrient_number', 
-            'amount_per_100_units',
-            'default_rda', 'upper_limit' # Added back generic RDA fields
+            'id', 'ingredient', 'nutrient', 'nutrient_name', 'nutrient_unit', 'fdc_nutrient_number', 
+            'amount_per_100_units', 
+            'default_rda', 'upper_limit' 
         ]
 
     def get_default_rda(self, obj):
@@ -60,16 +64,27 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 # Basic serializers for other models (can be expanded later)
 class PersonProfileSerializer(serializers.ModelSerializer):
+    personalized_drvs = serializers.SerializerMethodField()
+
     class Meta:
         model = PersonProfile
-        fields = '__all__'
+        fields = '__all__' # This will now include 'personalized_drvs' due to the method field
+
+    def get_personalized_drvs(self, obj):
+        if hasattr(obj, 'get_personalized_drvs'):
+            return obj.get_personalized_drvs()
+        return {}
 
 class IngredientUsageSerializer(serializers.ModelSerializer):
     ingredient_name = serializers.CharField(source='ingredient.name', read_only=True)
+    # Make meal_component writable for direct creation/update via IngredientUsageViewSet
+    meal_component = serializers.PrimaryKeyRelatedField(queryset=MealComponent.objects.all(), required=False)
+    # Ingredient is already a writable FK by default if included in fields
+    ingredient = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all()) # Ensure ingredient is also explicitly writable
 
     class Meta:
         model = IngredientUsage
-        fields = ['ingredient', 'ingredient_name', 'quantity']
+        fields = ['id', 'meal_component', 'ingredient', 'ingredient_name', 'quantity']
 
 class MealComponentSerializer(serializers.ModelSerializer):
     # For reading existing usages - matches the related_name from IngredientUsage to MealComponent
@@ -121,52 +136,146 @@ class MealComponentSerializer(serializers.ModelSerializer):
         
         return instance
 
-class MealPlanSerializer(serializers.ModelSerializer):
-    plan_nutritional_totals = serializers.SerializerMethodField()
-    plan_nutritional_targets_detail = serializers.SerializerMethodField(read_only=True)
-    # For M2M fields like target_people_profiles and meal_components,
-    # DRF handles them by default with PrimaryKeyRelatedField for write operations.
-    # For read operations, you might want to use a nested serializer or StringRelatedField.
-    # For now, default handling is fine, frontend will likely send IDs.
+class MealPlanItemSerializer(serializers.ModelSerializer):
+    # For Read operations - nested representation
+    meal_component_detail = MealComponentSerializer(source='meal_component', read_only=True)
+    assigned_people_detail = PersonProfileSerializer(source='assigned_people', many=True, read_only=True)
 
-    # To allow writing people and components by ID when creating/updating a MealPlan:
-    target_people_ids = serializers.PrimaryKeyRelatedField(
-        queryset=PersonProfile.objects.all(),
-        source='target_people_profiles',
-        many=True,
-        write_only=True, # Only for writing, reading uses target_people_profiles (default or custom depth)
-        required=False # Depending on if it's mandatory
+    # For Write operations - IDs
+    meal_component_id = serializers.PrimaryKeyRelatedField(
+        queryset=MealComponent.objects.all(), 
+        source='meal_component', 
+        write_only=True
     )
-    meal_component_ids = serializers.PrimaryKeyRelatedField(
-        queryset=MealComponent.objects.all(),
-        source='meal_components',
+    assigned_people_ids = serializers.PrimaryKeyRelatedField(
+        queryset=PersonProfile.objects.all(), 
+        source='assigned_people', 
+        many=True, 
+        write_only=True,
+        required=False # Allow empty list for "shared" items if that convention is used, or if explicitly assigning all.
+    )
+
+    class Meta:
+        model = MealPlanItem
+        fields = [
+            'id', 
+            'meal_component_id', 'meal_component_detail', # Write ID, Read Detail
+            'assigned_people_ids', 'assigned_people_detail', # Write IDs, Read Detail
+            # Add other MealPlanItem specific fields here if any (e.g., quantity_multiplier, notes)
+            'meal_plan' # meal_plan is often set implicitly by the parent serializer or view
+        ]
+        read_only_fields = ['meal_plan'] # meal_plan will be set by the MealPlanSerializer
+
+class MealPlanSerializer(serializers.ModelSerializer):
+    plan_nutritional_totals = serializers.SerializerMethodField(read_only=True)
+    plan_nutritional_targets_detail = serializers.SerializerMethodField(read_only=True)
+    
+    # For M2M field target_people_profiles - use 'target_people_profiles' as key for both read and write source
+    target_people_profiles = serializers.PrimaryKeyRelatedField(
+        queryset=PersonProfile.objects.all(),
         many=True,
         write_only=True,
         required=False
     )
-
-    # If you want to see the full profile objects on read, not just IDs:
+    # For reading, use a nested serializer with the same key 'target_people_profiles'
     target_people_profiles_detail = PersonProfileSerializer(source='target_people_profiles', many=True, read_only=True)
-    # If you want to see the full component objects on read:
-    meal_components_detail = MealComponentSerializer(source='meal_components', many=True, read_only=True)
+
+    # New handling for MealPlanItems
+    plan_items = MealPlanItemSerializer(many=True, read_only=True) # source defaults to 'plan_items'
+    plan_items_write = serializers.ListField(
+        child=serializers.DictField(),
+        write_only=True,
+        required=False,
+        source='plan_items' # Ensure this maps to the correct field for processing if needed, or handle in create/update
+    )
 
     class Meta:
         model = MealPlan
         fields = [
-            'id', 'name', 'description', 'duration_days', 
-            'target_people_profiles', 'target_people_profiles_detail', 'target_people_ids', # For read (detail) and write (ids)
-            'meal_components', 'meal_components_detail', 'meal_component_ids', # For read (detail) and write (ids)
-            'servings_per_day_per_person', 'notes',
+            'id', 'name', 'notes', 'duration_days', # Standardized to 'notes', removed 'description'
+            'target_people_profiles', 'target_people_profiles_detail', # target_people_profiles for write, _detail for read
+            'plan_items', 'plan_items_write',
+            'servings_per_day_per_person', 
             'creation_date', 'last_modified_date',
             'plan_nutritional_totals', 'plan_nutritional_targets_detail'
         ]
-        # read_only_fields = ['plan_nutritional_totals'] # This is fetched by get_plan_nutritional_totals method
+        read_only_fields = ['creation_date', 'last_modified_date']
 
     def get_plan_nutritional_totals(self, obj):
-        return obj.get_plan_nutritional_totals()
+        if hasattr(obj, 'get_plan_nutritional_totals'):
+            return obj.get_plan_nutritional_totals()
+        return {}
     
     def get_plan_nutritional_targets_detail(self, obj):
-        return obj.get_plan_nutritional_targets()
+        if hasattr(obj, 'get_plan_nutritional_targets'):
+            return obj.get_plan_nutritional_targets()
+        return {}
+
+    def _create_or_update_plan_items(self, meal_plan_instance, plan_items_data):
+        MealPlanItem.objects.filter(meal_plan=meal_plan_instance).delete()
+        
+        for item_data in plan_items_data:
+            component_id = item_data.get('meal_component_id')
+            people_ids = item_data.get('assigned_people_ids', [])
+            
+            if not component_id:
+                print(f"Skipping item, missing meal_component_id: {item_data}") 
+                continue
+
+            try:
+                meal_component = MealComponent.objects.get(id=component_id)
+            except MealComponent.DoesNotExist:
+                print(f"Skipping item, MealComponent not found: {component_id}")
+                continue
+            
+            plan_item = MealPlanItem.objects.create(
+                meal_plan=meal_plan_instance,
+                meal_component=meal_component
+            )
+            if people_ids:
+                try:
+                    assigned_person_profiles = PersonProfile.objects.filter(id__in=people_ids)
+                    plan_item.assigned_people.set(assigned_person_profiles)
+                except Exception as e:
+                    print(f"Error assigning people to item {plan_item.id}: {e}")
+
+    def create(self, validated_data):
+        target_people_data = validated_data.pop('target_people_profiles', [])
+        plan_items_data = validated_data.pop('plan_items', []) # Changed from plan_items_write to plan_items based on source
+        
+        # Remove 'description' if it's still in validated_data and model doesn't have it
+        validated_data.pop('description', None)
+
+        meal_plan = MealPlan.objects.create(**validated_data)
+        
+        if target_people_data:
+            meal_plan.target_people_profiles.set(target_people_data)
+            
+        self._create_or_update_plan_items(meal_plan, plan_items_data)
+        
+        return meal_plan
+
+    def update(self, instance, validated_data):
+        target_people_data = validated_data.pop('target_people_profiles', None)
+        plan_items_data = validated_data.pop('plan_items', None) # Changed from plan_items_write to plan_items
+
+        # Remove 'description' if it's still in validated_data and model doesn't have it
+        validated_data.pop('description', None)
+
+        instance.name = validated_data.get('name', instance.name)
+        # instance.description = validated_data.get('description', instance.description) # Removed description
+        instance.notes = validated_data.get('notes', instance.notes)
+        instance.duration_days = validated_data.get('duration_days', instance.duration_days)
+        instance.servings_per_day_per_person = validated_data.get('servings_per_day_per_person', instance.servings_per_day_per_person)
+        instance.save()
+
+        if target_people_data is not None:
+            instance.target_people_profiles.set(target_people_data)
+            
+        if plan_items_data is not None:
+            self._create_or_update_plan_items(instance, plan_items_data)
+            
+        return instance
 
 class FoodPortionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -181,4 +290,4 @@ class DietaryReferenceValueSerializer(serializers.ModelSerializer):
 class IngredientSearchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
-        fields = ['id', 'name', 'fdc_id'] 
+        fields = ['id', 'name', 'fdc_id']
