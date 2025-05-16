@@ -9,7 +9,7 @@ class TestNutrientModel:
             name="Test Nutrient",
             unit="mg",
             category=NutrientCategory.MINERAL,
-            description="This is a test nutrient",
+            source_notes="This is a test nutrient",
             is_essential=True
         )
         
@@ -17,7 +17,7 @@ class TestNutrientModel:
         assert nutrient.name == "Test Nutrient"
         assert nutrient.unit == "mg"
         assert nutrient.category == NutrientCategory.MINERAL
-        assert nutrient.description == "This is a test nutrient"
+        assert nutrient.source_notes == "This is a test nutrient"
         assert nutrient.is_essential == True
         
         # Test string representation

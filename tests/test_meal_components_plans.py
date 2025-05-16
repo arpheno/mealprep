@@ -229,7 +229,7 @@ class TestMealPlanModel:
         # Create a meal plan for 7 days
         self.meal_plan = MealPlan.objects.create(
             name="Test Meal Plan",
-            description="A test meal plan for 7 days",
+            notes="A test meal plan for 7 days",
             duration_days=7,
             servings_per_day_per_person=2
         )
@@ -259,7 +259,7 @@ class TestMealPlanModel:
     def test_meal_plan_creation(self):
         """Test the basic properties of a meal plan"""
         assert self.meal_plan.name == "Test Meal Plan"
-        assert self.meal_plan.description == "A test meal plan for 7 days"
+        assert self.meal_plan.notes == "A test meal plan for 7 days"
         assert self.meal_plan.duration_days == 7
         assert self.meal_plan.servings_per_day_per_person == 2
         
