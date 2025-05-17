@@ -81,10 +81,35 @@ class IngredientUsageSerializer(serializers.ModelSerializer):
     meal_component = serializers.PrimaryKeyRelatedField(queryset=MealComponent.objects.all(), required=False)
     # Ingredient is already a writable FK by default if included in fields
     ingredient = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all()) # Ensure ingredient is also explicitly writable
+    scaled_nutrient_contributions = serializers.SerializerMethodField()
 
     class Meta:
         model = IngredientUsage
-        fields = ['id', 'meal_component', 'ingredient', 'ingredient_name', 'quantity']
+        fields = ['id', 'meal_component', 'ingredient', 'ingredient_name', 'quantity', 'scaled_nutrient_contributions']
+
+    def get_scaled_nutrient_contributions(self, obj: IngredientUsage):
+        """
+        Calculates the nutrient amounts contributed by this specific ingredient usage,
+        scaled by its quantity.
+        """
+        contributions = []
+        # obj is an IngredientUsage instance
+        ingredient_instance = obj.ingredient
+        quantity_multiplier = obj.quantity / 100.0  # Assuming nutrient_links are per 100g/ml
+
+        for link in ingredient_instance.ingredientnutrientlink_set.all():
+            nutrient = link.nutrient
+            scaled_amount = link.amount_per_100_units * quantity_multiplier
+            contributions.append({
+                'nutrient_id': nutrient.id,
+                'nutrient_name': nutrient.name,
+                'nutrient_unit': nutrient.unit,
+                'fdc_nutrient_number': nutrient.fdc_nutrient_number,
+                'scaled_amount': scaled_amount,
+                'default_rda': nutrient.get_default_rda(), # Get from Nutrient model
+                'upper_limit': nutrient.get_upper_limit()  # Get from Nutrient model
+            })
+        return contributions
 
 class MealComponentSerializer(serializers.ModelSerializer):
     # For reading existing usages - matches the related_name from IngredientUsage to MealComponent

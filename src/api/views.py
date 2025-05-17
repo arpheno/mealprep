@@ -100,19 +100,31 @@ class IngredientSearchAPIView(generics.ListAPIView):
         """
         queryset = Ingredient.objects.all()
         name_query = self.request.query_params.get('name', None)
-        if name_query is not None:
-            queryset = queryset.filter(name__icontains=name_query)
-        # Order by exact match first, then by name
-        # This uses Case/When to prioritize results that start with the search term
+
         if name_query:
+            queryset = queryset.filter(name__icontains=name_query)
+            # Order by custom food first, then by exact match, then by name
             return queryset.annotate(
+                is_custom_food=Case(
+                    When(food_class='Custom', then=0),
+                    default=1,
+                    output_field=IntegerField(),
+                ),
                 starts_with=Case(
                     When(name__istartswith=name_query, then=0),
                     default=1,
                     output_field=IntegerField(),
                 )
-            ).order_by('starts_with', 'name')[:20]  # Limit results for performance
-        return queryset.order_by('name')[:20]  # If no query, just sort by name
+            ).order_by('is_custom_food', 'starts_with', 'name')[:20]  # Limit results
+
+        # If no name_query, still prioritize custom foods
+        return queryset.annotate(
+            is_custom_food=Case(
+                When(food_class='Custom', then=0),
+                default=1,
+                output_field=IntegerField(),
+            )
+        ).order_by('is_custom_food', 'name')[:20]  # Limit results
 
 class CalculateNutritionalTargetsView(APIView):
     """

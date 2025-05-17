@@ -21,7 +21,10 @@
             : stylingFunctions.getPlanNutrientBarStyle(nutrientData, planDurationDays)"
           class="nutrient-data-row"
         >
-          <td>{{ nutrientKey }}</td>
+          <td>
+            {{ nutrientKey }}
+            <span @click="$emit('nutrient-drilldown', { nutrientKey, nutrientData })" class="drilldown-icon" title="View Sources">ℹ️</span>
+          </td>
           <td class="nutrient-value-cell">
             {{ nutrientData.total.toFixed(displayConstants.MACRO_FDC_NUMBERS.includes(nutrientData.fdc_nutrient_number) ? 1 : 2) }} {{ nutrientData.unit }}
             <span v-if="!tableConfig.isNoReferenceTable && displayConstants.MACRO_FDC_NUMBERS.includes(nutrientData.fdc_nutrient_number) && nutrientData.percent_energy !== null && nutrientData.percent_energy !== undefined">
@@ -55,7 +58,7 @@
 </template>
 
 <script setup>
-import { defineProps } from 'vue';
+import { defineProps, defineEmits } from 'vue';
 
 // Props define the data and configuration for this display table
 defineProps({
@@ -87,6 +90,8 @@ defineProps({
     required: true, // { MACRO_FDC_NUMBERS, FDC_NUM_CARB, etc. }
   }
 });
+
+const emit = defineEmits(['nutrient-drilldown']); // Define the event
 </script>
 
 <style scoped>
@@ -110,5 +115,16 @@ defineProps({
 }
 .no-reference-table .nutrient-group-header {
     display: none; /* No group headers for no-reference table */
+}
+
+.drilldown-icon {
+  margin-left: 8px;
+  cursor: pointer;
+  font-size: 0.9em;
+  color: var(--color-primary); /* Or any other suitable color */
+}
+
+.drilldown-icon:hover {
+  opacity: 0.7;
 }
 </style> 

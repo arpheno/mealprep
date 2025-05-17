@@ -1,0 +1,264 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    background-color: #f4f4f4;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h1, h2, h3 {
+    color: #333;
+    margin-bottom: 0.7em;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 1em;
+    color: #2c3e50;
+}
+
+.section {
+    margin-bottom: 30px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    width: calc(100% - 22px);
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+select {
+     width: 100%;
+}
+
+button {
+    background-color: #3498db;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+#searchButton {
+    margin-left: 10px;
+    padding: 10px 15px;
+    width: auto;
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+#searchFoundationalFood {
+    flex-grow: 1;
+    margin-bottom: 0;
+}
+
+
+#nutrientsContainer .nutrient-item,
+#portionsContainer .portion-item {
+    border: 1px dashed #eee;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+#nutrientsContainer .nutrient-item h4,
+#portionsContainer .portion-item h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 0.9em;
+    color: #555;
+}
+
+/* Styles for inline nutrient items */
+.nutrient-item-inline {
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping on very small screens */
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    margin-bottom: 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.nutrient-item-inline .nutrient-header {
+    font-size: 0.9em;
+    margin-right: 10px;
+    white-space: nowrap;
+    flex-basis: 150px; /* Give it some base width */
+    flex-grow: 0;
+}
+
+.nutrient-item-inline input[type="text"],
+.nutrient-item-inline input[type="number"] {
+    padding: 8px;
+    margin-right: 8px;
+    margin-bottom: 0; /* Override general margin for inputs */
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+.nutrient-item-inline .nutrient-name {
+    flex-grow: 3; /* Name field takes more space */
+    min-width: 200px;
+}
+
+.nutrient-item-inline .nutrient-number {
+    flex-grow: 1;
+    min-width: 60px;
+    max-width: 80px;
+}
+
+.nutrient-item-inline .nutrient-unit {
+    flex-grow: 1;
+    min-width: 60px;
+    max-width: 80px;
+}
+
+.nutrient-item-inline .nutrient-amount {
+    flex-grow: 1;
+    min-width: 80px;
+    max-width: 100px;
+}
+
+.nutrient-item-inline .remove-button {
+    padding: 6px 10px;
+    font-size: 0.85em;
+    margin-left: auto; /* Pushes button to the far right if space allows */
+}
+
+.nutrient-field,
+.portion-field {
+    margin-bottom: 10px;
+}
+
+.nutrient-field label,
+.portion-field label {
+    font-size: 0.9em;
+    font-weight: normal;
+}
+
+.nutrient-field input,
+.portion-field input {
+    padding: 8px;
+    font-size: 0.95em;
+}
+
+#addNutrientButton,
+#addPortionButton {
+    background-color: #2ecc71;
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+
+#addNutrientButton:hover,
+#addPortionButton:hover {
+    background-color: #27ae60;
+}
+
+.remove-button {
+    background-color: #e74c3c;
+    font-size: 0.8em;
+    padding: 5px 10px;
+    margin-left: 10px;
+}
+
+.remove-button:hover {
+    background-color: #c0392b;
+}
+
+#myFoodsListContainer {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    padding: 10px;
+    background-color: #fff;
+}
+
+#myFoodsList {
+    list-style-type: none;
+    padding: 0;
+}
+
+#myFoodsList li {
+    padding: 8px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+#myFoodsList li:last-child {
+    border-bottom: none;
+}
+
+.error-message {
+    color: #e74c3c;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+.success-message {
+    color: #2ecc71;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+input:read-only {
+    background-color: #ecf0f1;
+    cursor: not-allowed;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .search-container {
+        flex-direction: column;
+    }
+    #searchFoundationalFood {
+        margin-bottom: 10px;
+    }
+    #searchButton {
+        width: 100%;
+        margin-left: 0;
+    }
+    input[type="text"],
+    input[type="number"],
+    select {
+        width: 100%;
+    }
+} 

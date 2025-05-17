@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Editor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Food Editor</h1>
+
+        <div class="section">
+            <h2>1. Select Template Food</h2>
+            
+            <div class="source-select-container">
+                <label for="dataSourceSelect">Select Data Source:</label>
+                <select id="dataSourceSelect">
+                    <option value="foundational">Foundational Foods</option>
+                    <option value="survey">Survey Foods (NHANES)</option>
+                </select>
+            </div>
+
+            <div class="search-container">
+                <input type="text" id="searchFoodInput" placeholder="Search selected source (e.g., broccoli)...">
+                <button id="searchButton">Search</button>
+            </div>
+            <select id="foodResultsSelect" size="10">
+                <option value="">-- Search and select a food --</option>
+            </select>
+            <p class="error-message" id="foodSearchError"></p>
+        </div>
+
+        <div class="section" id="foodEditFormSection" style="display: none;">
+            <h2>2. Edit Food Details</h2>
+            <form id="foodEditForm">
+                <input type="hidden" id="fdcIdOriginal">
+                
+                <label for="description">Description:</label>
+                <input type="text" id="description" name="description" required>
+
+                <label for="foodClass">Food Class:</label>
+                <input type="text" id="foodClass" name="foodClass" value="Custom" readonly>
+
+                <h3>Food Category</h3>
+                <input type="hidden" id="foodCategoryIdOriginal">
+                <label for="foodCategoryDescription">Description:</label>
+                <input type="text" id="foodCategoryDescription" name="foodCategoryDescription" value="Custom Foods">
+                <label for="foodCategoryCode">Code:</label>
+                <input type="text" id="foodCategoryCode" name="foodCategoryCode" value="9999">
+
+                <h3>Nutrients</h3>
+                <div id="nutrientsContainer">
+                    <!-- Nutrients will be dynamically added here -->
+                </div>
+                <button type="button" id="addNutrientButton">Add Custom Nutrient</button>
+
+                <h3>Portions</h3>
+                <div id="portionsContainer">
+                    <!-- Portions will be dynamically added here -->
+                </div>
+                <button type="button" id="addPortionButton">Add Portion</button>
+
+                <hr>
+                <button type="submit" id="saveToMyFoodsButton">Save to My Foods</button>
+                <p class="success-message" id="saveSuccessMessage"></p>
+                <p class="error-message" id="saveErrorMessage"></p>
+            </form>
+        </div>
+
+        <div class="section">
+            <h2>My Custom Foods</h2>
+            <button id="loadMyFoodsButton">Load My Foods</button>
+            <div id="myFoodsListContainer">
+                <ul id="myFoodsList"></ul>
+            </div>
+             <p class="error-message" id="myFoodsError"></p>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

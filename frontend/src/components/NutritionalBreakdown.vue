@@ -31,6 +31,7 @@
         :planDurationDays="planDurationDays"
         :stylingFunctions="stylingUtils"
         :displayConstants="nutritionConsts"
+        @nutrient-drilldown="handleNutrientDrilldown"
       />
       <div v-if="overallSummaryNoRef.hasData" class="no-reference-values-section">
         <h5 class="no-reference-table-title">Other Components (No RDA/UL specified)</h5>
@@ -40,6 +41,7 @@
           :planDurationDays="planDurationDays"
           :stylingFunctions="stylingUtils"
           :displayConstants="nutritionConsts"
+          @nutrient-drilldown="handleNutrientDrilldown"
         />
       </div>
     </div>
@@ -56,6 +58,7 @@
         :planDurationDays="planDurationDays"
         :stylingFunctions="stylingUtils"
         :displayConstants="nutritionConsts"
+        @nutrient-drilldown="handleNutrientDrilldown"
       />
       <div v-if="perPersonBreakdownNoRef.data[activeViewInternal] && perPersonBreakdownNoRef.data[activeViewInternal].hasData" class="no-reference-values-section">
         <h5 class="no-reference-table-title">Other Components (No RDA/UL specified)</h5>
@@ -65,15 +68,27 @@
           :planDurationDays="planDurationDays"
           :stylingFunctions="stylingUtils"
           :displayConstants="nutritionConsts"
+          @nutrient-drilldown="handleNutrientDrilldown"
         />
       </div>
     </div>
+
+    <NutrientSourceDetailModal
+      v-if="isDrilldownModalVisible"
+      :nutrientDetail="drilldownNutrientDetail"
+      :planItemsData="props.breakdownData.sourcePlanItems"
+      :activeView="activeViewInternal"
+      :selectedPeople="props.selectedPeople"
+      :planDurationDays="props.planDurationDays"
+      @close="isDrilldownModalVisible = false"
+    />
   </div>
 </template>
 
 <script setup>
 import { defineProps, defineEmits, ref, watch, computed } from 'vue';
-import NutrientDisplayTable from './NutrientDisplayTable.vue'; // Import the new component
+import NutrientDisplayTable from './NutrientDisplayTable.vue';
+import NutrientSourceDetailModal from './NutrientSourceDetailModal.vue'; // Import the modal
 import * as stylingUtils from '../utils/nutritionDisplayUtils.js';
 import * as nutritionConsts from '../utils/nutritionConstants.js';
 
@@ -81,7 +96,7 @@ const props = defineProps({
   breakdownData: {
     type: Object,
     required: true,
-    default: () => ({ overallSummary: {}, perPersonBreakdown: {} })
+    default: () => ({ overallSummary: {}, perPersonBreakdown: {}, sourcePlanItems: [] })
   },
   activeView: {
     type: [String, Number],
@@ -102,6 +117,9 @@ const props = defineProps({
 const emit = defineEmits(['update:activeView']);
 const activeViewInternal = ref(props.activeView);
 
+const isDrilldownModalVisible = ref(false);
+const drilldownNutrientDetail = ref(null);
+
 watch(() => props.activeView, (newVal) => {
   activeViewInternal.value = newVal;
 });
@@ -109,6 +127,17 @@ watch(() => props.activeView, (newVal) => {
 const setActiveView = (viewId) => {
   activeViewInternal.value = viewId;
   emit('update:activeView', viewId);
+};
+
+const handleNutrientDrilldown = ({ nutrientKey, nutrientData }) => {
+  console.log('Drilldown triggered for:', nutrientKey, nutrientData);
+  // nutrientData contains: total, unit, rda, ul, fdc_nutrient_number, kcal_contribution, percent_energy
+  // nutrientKey is like "Protein (g)"
+  drilldownNutrientDetail.value = {
+    key: nutrientKey,
+    ...nutrientData
+  };
+  isDrilldownModalVisible.value = true;
 };
 
 // Helper function to filter nutrient groups

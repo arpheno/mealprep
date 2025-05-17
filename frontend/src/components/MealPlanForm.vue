@@ -639,7 +639,10 @@ const livePlanNutritionalBreakdown = computed(() => {
   // DEBUG: Log final result of livePlanNutritionalBreakdown
   console.log('[MealPlanForm] Final livePlanNutritionalBreakdown result:', JSON.parse(JSON.stringify(result)));
 
-  return result;
+  return {
+    ...result,
+    sourcePlanItems: addedMealComponents.value
+  };
 });
 
 const addComponentToPlan = (componentToAdd) => {
