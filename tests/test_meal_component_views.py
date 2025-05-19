@@ -131,19 +131,17 @@ class MealComponentViewSetTests(APITestCase):
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue('results' in response.data, "Response should be paginated and contain 'results' key")
-        self.assertEqual(response.data['count'], 2)
-        
-        results = response.data['results']
-        self.assertEqual(len(results), 2)
+        # Assuming pagination is turned off as per user's manual change
+        self.assertFalse('results' in response.data, "Response should not be paginated")
+        self.assertEqual(len(response.data), 2)
         
         # Check that the meal component names match what we expect
-        component_names = [component['name'] for component in results]
+        component_names = [component['name'] for component in response.data]
         self.assertIn("Chicken and Rice Bowl", component_names)
         self.assertIn("Broccoli Side", component_names)
         
         # Check that the first component has the expected category
-        for component in results:
+        for component in response.data:
             if component['name'] == "Chicken and Rice Bowl":
                 self.assertEqual(component['category_tag'], "Lunch")
             elif component['name'] == "Broccoli Side":
@@ -315,12 +313,10 @@ class MealComponentViewSetTests(APITestCase):
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue('results' in response.data, "Response should be paginated and contain 'results' key")
-        self.assertEqual(response.data['count'], 1)
-        
-        results = response.data['results']
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]['name'], 'Chicken and Rice Bowl')
+        # Assuming pagination is turned off
+        self.assertFalse('results' in response.data, "Response should not be paginated")
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['name'], 'Chicken and Rice Bowl')
 
     def test_search_by_category_tag(self):
         """Test searching meal components by category tag."""
@@ -328,12 +324,10 @@ class MealComponentViewSetTests(APITestCase):
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue('results' in response.data, "Response should be paginated and contain 'results' key")
-        self.assertEqual(response.data['count'], 1)
-        
-        results = response.data['results']
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]['name'], 'Broccoli Side')
+        # Assuming pagination is turned off
+        self.assertFalse('results' in response.data, "Response should not be paginated")
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['name'], 'Broccoli Side')
 
     def test_ordering_by_name(self):
         """Test ordering meal components by name."""
@@ -349,28 +343,26 @@ class MealComponentViewSetTests(APITestCase):
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue('results' in response.data, "Response should be paginated and contain 'results' key")
-        self.assertEqual(response.data['count'], 3)
-        
-        results = response.data['results']
-        self.assertEqual(len(results), 3)
+        # Assuming pagination is turned off
+        self.assertFalse('results' in response.data, "Response should not be paginated")
+        self.assertEqual(len(response.data), 3)
         
         # Check the order of meal components
-        self.assertEqual(results[0]['name'], 'Avocado Toast')
-        self.assertEqual(results[1]['name'], 'Broccoli Side')
-        self.assertEqual(results[2]['name'], 'Chicken and Rice Bowl')
+        self.assertEqual(response.data[0]['name'], 'Avocado Toast')
+        self.assertEqual(response.data[1]['name'], 'Broccoli Side')
+        self.assertEqual(response.data[2]['name'], 'Chicken and Rice Bowl')
         
         # Test reverse ordering
         url = reverse('mealcomponent-list') + '?ordering=-name'
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue('results' in response.data, "Response should be paginated and contain 'results' key") # Added pagination check
-        self.assertEqual(response.data['count'], 3) # Added count check
-        results = response.data['results'] # get results from paginated response
-        self.assertEqual(results[0]['name'], 'Chicken and Rice Bowl')
-        self.assertEqual(results[1]['name'], 'Broccoli Side')
-        self.assertEqual(results[2]['name'], 'Avocado Toast')
+        # Assuming pagination is turned off
+        self.assertFalse('results' in response.data, "Response should not be paginated")
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.data[0]['name'], 'Chicken and Rice Bowl')
+        self.assertEqual(response.data[1]['name'], 'Broccoli Side')
+        self.assertEqual(response.data[2]['name'], 'Avocado Toast')
 
     def test_ordering_by_category_tag(self):
         """Test ordering meal components by category tag."""
@@ -386,12 +378,10 @@ class MealComponentViewSetTests(APITestCase):
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue('results' in response.data, "Response should be paginated and contain 'results' key")
-        self.assertEqual(response.data['count'], 3)
-        
-        results = response.data['results']
-        self.assertEqual(len(results), 3)
+        # Assuming pagination is turned off
+        self.assertFalse('results' in response.data, "Response should not be paginated")
+        self.assertEqual(len(response.data), 3)
         
         # Check the order of meal components (alphabetical by category_tag)
-        categories = [component['category_tag'] for component in results]
+        categories = [component['category_tag'] for component in response.data]
         self.assertEqual(categories, ['Breakfast', 'Lunch', 'Side'])

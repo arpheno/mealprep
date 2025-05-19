@@ -15,7 +15,7 @@ SURVEY_FOODS_PATH = os.path.join(DATA_DIR, 'surveyDownload.json')
 
 # Import models from models.py
 # Make sure models.py is in the same directory or accessible via PYTHONPATH
-from .models import FoodItem, FoodList, NutrientInfo, FoodNutrient, FoodCategory, MeasureUnit, FoodPortion
+from models import FoodItem, FoodList, NutrientInfo, FoodNutrient, FoodCategory, MeasureUnit, FoodPortion
 
 app = FastAPI(
     title="Food Editor API",

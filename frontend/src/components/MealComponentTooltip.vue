@@ -4,9 +4,11 @@
     
     <div class="tooltip-section">
       <h5>Ingredients:</h5>
-      <ul ref="ingredientsListEl" v-if="component.ingredient_links && component.ingredient_links.length">
-        <li v-for="link in component.ingredient_links" :key="link.ingredient_id">
-          {{ link.ingredient_name }}: {{ formatQuantity(link.quantity) }} {{ link.measurement_unit_name }}
+      <ul ref="ingredientsListEl" v-if="component.ingredientusage_set && component.ingredientusage_set.length">
+        <li v-for="usage in component.ingredientusage_set" :key="usage.ingredient_detail ? usage.ingredient_detail.id : usage.ingredient">
+          {{ usage.ingredient_detail ? usage.ingredient_detail.name : (usage.ingredient_name || 'Unknown Ingredient') }}: 
+          {{ formatQuantity(usage.quantity) }} 
+          {{ usage.ingredient_detail && usage.ingredient_detail.measurement_unit_name ? usage.ingredient_detail.measurement_unit_name : (usage.measurement_unit_name || 'g') }}
         </li>
       </ul>
       <p v-else>No ingredients listed.</p>

@@ -1,28 +1,33 @@
 from django.db import models
-from django.conf import settings # For ForeignKey to User if needed later
+from django.db.models import Q
+from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.utils import timezone
-from django.contrib.auth.models import User # For potential future user links
+from django.contrib.auth.models import User
 from collections import defaultdict
 
 # --- Helper function for PersonProfile default nutrient targets ---
 def get_default_nutrient_targets():
     # This function is called when a new PersonProfile is created.
     # It attempts to find common nutrients (Energy, Protein) and set default targets.
-    # In a production system, you might want to ensure these nutrients exist
-    # or handle cases where they don't more gracefully (e.g., during post_migrate signal).
     defaults = {}
     try:
-        # Attempt to get the standard unit for Energy (Calories)
-        energy_nutrient = Nutrient.objects.filter(name__iexact='Energy').first() or \
-                          Nutrient.objects.filter(name__iexact='Calories').first()
+        # Use the new manager method to find Energy, trying "Energy" then "Calories"
+        # Assumes "Energy" is the canonical name if both exist.
+        energy_nutrient = Nutrient.objects.filter_by_name_or_alias('Energy').first()
+        if not energy_nutrient:
+            energy_nutrient = Nutrient.objects.filter_by_name_or_alias('Calories').first()
+        
         energy_unit = energy_nutrient.unit if energy_nutrient else 'kcal'
+        # Store with canonical name "Energy" if possible, or the key used for lookup.
+        # It's best if custom_nutrient_targets in PersonProfile uses canonical keys.
+        # For this default, we'll use "Energy" as the key.
         defaults["Energy"] = {"target": 2000, "unit": energy_unit, "is_override": True}
-    except Exception: # Catch broader errors if Nutrient table isn't populated yet during migrations
+    except Exception: # Catch broader errors if Nutrient table isn't populated yet
         defaults["Energy"] = {"target": 2000, "unit": "kcal", "is_override": True} # Fallback
 
     try:
-        protein_nutrient = Nutrient.objects.filter(name__iexact='Protein').first()
+        protein_nutrient = Nutrient.objects.filter_by_name_or_alias('Protein').first()
         protein_unit = protein_nutrient.unit if protein_nutrient else 'g'
         defaults["Protein"] = {"target": 75, "unit": protein_unit, "is_override": True}
     except Exception:
@@ -84,8 +89,47 @@ class MealComponentFrequency(models.TextChoices):
 
 # --- Django Models --- 
 
+class NutrientManager(models.Manager):
+    def get_by_name_or_alias(self, name_query):
+        """
+        Retrieves a single Nutrient instance by its canonical name or any of its aliases.
+        Raises Nutrient.DoesNotExist if not found.
+        Raises Nutrient.MultipleObjectsReturned if multiple distinct nutrients match (should not happen with unique names/aliases).
+        """
+        try:
+            # Check direct canonical name match (case-insensitive)
+            return self.get(name__iexact=name_query)
+        except self.model.DoesNotExist:
+            # If not found, check aliases (case-insensitive)
+            try:
+                return self.get(aliases__name__iexact=name_query)
+            except self.model.DoesNotExist:
+                raise self.model.DoesNotExist(
+                    f"{self.model.__name__} matching query '{name_query}' does not exist in canonical names or aliases."
+                )
+            except self.model.MultipleObjectsReturned:
+                # This could happen if the same alias string somehow got linked to multiple nutrients,
+                # which should be prevented by NutrientAlias.name being unique.
+                # Or if the query matches multiple aliases that point to different nutrients.
+                # For a .get() operation, this is an issue.
+                raise self.model.MultipleObjectsReturned(
+                    f"Query '{name_query}' matched multiple distinct nutrients through aliases."
+                )
+        except self.model.MultipleObjectsReturned:
+            # Should not happen if Nutrient.name is unique
+            raise
+
+    def filter_by_name_or_alias(self, name_query):
+        """
+        Filters Nutrient instances by canonical name or any of their aliases (case-insensitive).
+        Returns a QuerySet.
+        """
+        return self.filter(
+            Q(name__iexact=name_query) | Q(aliases__name__iexact=name_query)
+        ).distinct()
+
 class Nutrient(models.Model):
-    name = models.CharField(max_length=100, help_text='e.g., Calories, Protein, Vitamin C, Iron')
+    name = models.CharField(max_length=100, unique=True, help_text='e.g., Vitamin C, Protein. This is the canonical name.') # Made unique
     unit = models.CharField(max_length=20, help_text='e.g., kcal, g, mg, mcg, IU')
     fdc_nutrient_id = models.IntegerField(unique=True, null=True, blank=True, db_index=True, help_text="FoodData Central Nutrient ID (nutrient.id from FDC data)")
     fdc_nutrient_number = models.CharField(max_length=10, null=True, blank=True, db_index=True, help_text="FoodData Central Nutrient Number (nutrient.number from FDC data)")
@@ -99,6 +143,8 @@ class Nutrient(models.Model):
     # Their data will be managed by the new DietaryReferenceValue model.
     is_essential = models.BooleanField(default=False)
     source_notes = models.TextField(blank=True, null=True, help_text='e.g., Source of RDA data, general notes about the nutrient')
+
+    objects = NutrientManager() # Add the custom manager
 
     def __str__(self):
         return f'{self.name} ({self.unit})'
@@ -132,6 +178,17 @@ class Nutrient(models.Model):
         if drv:
             return drv.ul
         return None
+
+class NutrientAlias(models.Model):
+    name = models.CharField(max_length=255, unique=True, help_text="An alternative name or symbol for a nutrient (e.g., 'Vitamin B2', 'Thiamin'). Must be unique.")
+    nutrient = models.ForeignKey(Nutrient, related_name='aliases', on_delete=models.CASCADE, help_text="The canonical nutrient this alias refers to.")
+
+    def __str__(self):
+        return f"{self.name} (Alias for {self.nutrient.name})"
+
+    class Meta:
+        ordering = ['name']
+        verbose_name_plural = "Nutrient Aliases"
 
 class Ingredient(models.Model):
     name = models.CharField(max_length=255, help_text='e.g., Chicken Breast, boneless, skinless, raw. Will be populated from FDC description.')

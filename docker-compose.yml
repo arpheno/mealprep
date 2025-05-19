@@ -39,5 +39,15 @@ services:
     ports:
       - "8080:80" # Host:Container (Vue app will be on localhost:8080)
 
+  frontend-test: # New service for running tests
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: build-stage # Explicitly target the build-stage
+    volumes:
+      - ./frontend:/app # Mount frontend source code
+      - /app/node_modules # Anonymous volume to persist node_modules within the container, avoiding override by local empty dir
+    command: tail -f /dev/null # Keep container running if needed, or override with test command
+
 volumes:
   postgres_data: # Persists database data across restarts 

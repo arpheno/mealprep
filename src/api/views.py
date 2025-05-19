@@ -49,6 +49,7 @@ class MealComponentViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'category_tag', 'description_recipe']
     ordering_fields = ['name', 'category_tag']
     ordering = ['name']
+    pagination_class = None
 
 class MealPlanViewSet(viewsets.ModelViewSet):
     """API endpoint that allows meal plans to be viewed or edited."""

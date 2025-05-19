@@ -9,13 +9,15 @@
     "test:unit": "vitest"
   },
   "dependencies": {
-    "axios": "^1.9.0",
-    "chart.js": "^4.4.1",
-    "core-js": "^3.8.3",
-    "three": "^0.160.0",
-    "vue": "^3.2.13",
-    "vue-chartjs": "^5.3.0",
-    "vue-router": "^4.5.1"
+    "@vuelidate/core": "^2.0.3",
+    "@vuelidate/validators": "^2.0.4",
+    "axios": "^1.6.2",
+    "echarts": "^5.5.0",
+    "pinia": "^2.1.7",
+    "vue": "^3.3.11",
+    "vue-echarts": "^6.7.3",
+    "vue-router": "^4.2.5",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",

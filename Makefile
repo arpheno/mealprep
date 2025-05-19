@@ -1,7 +1,15 @@
-.PHONY: tests all-containers all-docker web frontend db logs logs-web logs-frontend logs-db backup help
+.PHONY: tests all-containers all-docker web frontend db logs logs-web logs-frontend logs-db backup help import-fdc import-custom-drvs food-editor test-frontend
 
 tests:
-	PYTHONPATH=src pytest $(ARGS)
+	PYTHONPATH=src python -m pytest $(ARGS)
+	@echo "Running frontend unit tests..."
+	$(MAKE) test-frontend
+
+test-frontend: ## Run frontend unit tests inside the Docker container.
+	@echo "Building frontend-test service (if necessary)..."
+	docker-compose build frontend-test
+	@echo "Executing frontend tests (npm run test:unit) using frontend-test service..."
+	docker-compose run --rm frontend-test npm run test:unit
 
 # Docker workflow commands
 # Usage:
@@ -122,3 +130,22 @@ backup: ## Create a timestamped backup of the PostgreSQL database in your home d
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
+# Django Management Commands
+# Example usage: make import-fdc ARGS="--delete-before-import"
+import-fdc:
+	@echo "Ensuring web service is running..."
+	docker-compose up -d web
+	@echo "Importing FDC foundational data..."
+	docker-compose exec web python manage.py import_fdc_foundational $(ARGS)
+
+import-custom-drvs:
+	@echo "Ensuring web service is running..."
+	docker-compose up -d web
+	@echo "Importing custom DRVs..."
+	docker-compose exec web python manage.py import_custom_drvs $(ARGS)
+
+# Food Editor target: runs the FastAPI server for the food editor
+food-editor:
+	@echo "Starting Food Editor API using uvicorn..."
+	echo "Activating virtual environment..."; 
+	PYTHONPATH=food_editor_ui/backend . .venv/bin/activate && uvicorn app:app --reload --port 8008

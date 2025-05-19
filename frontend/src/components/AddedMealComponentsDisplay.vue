@@ -19,6 +19,14 @@
         >
           &times;
         </button>
+        <button 
+          type="button" 
+          @click="$emit('edit-component', itemInPlan.component)" 
+          class="edit-component-btn" 
+          title="Edit component"
+        >
+          Edit
+        </button>
         <div class="component-tile-header">
           <span class="tile-name">{{ itemInPlan.component.name }}</span>
         </div>
@@ -75,7 +83,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['remove-component', 'update:assignment']);
+const emit = defineEmits(['remove-component', 'update:assignment', 'edit-component']);
 
 const togglePersonAssignment = (itemInPlan, personId) => {
   const currentAssignments = [...itemInPlan.assigned_people_ids];
@@ -225,6 +233,30 @@ const handleTileWheel = (event, componentData) => {
 
 .remove-component-btn:hover {
   background-color: var(--color-danger-dark, #c0392b);
+}
+
+.edit-component-btn {
+  position: absolute;
+  top: 8px;
+  right: 38px; /* Position next to the remove button */
+  width: auto; /* Auto width based on content */
+  padding: 0 8px; /* Add some padding */
+  height: 24px;
+  border-radius: 12px; /* Pill shape */
+  background-color: var(--color-button-bg, #4CAF50);
+  color: var(--color-button-text, white);
+  border: none;
+  font-size: 12px; /* Adjusted font size */
+  font-weight: bold;
+  line-height: 24px; /* Center text vertically */
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: background-color 0.2s ease;
+}
+
+.edit-component-btn:hover {
+  background-color: var(--color-primary-dark, #45a049);
 }
 
 .component-tile-header .tile-name {

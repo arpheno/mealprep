@@ -1,5 +1,8 @@
 <template>
   <form @submit.prevent="saveMealComponent" class="meal-component-form">
+    <div class="form-header">
+      <h2>{{ isEditMode ? 'Edit Meal Component' : 'Create Meal Component' }}</h2>
+    </div>
     <div class="form-group">
       <label for="name">Component Name:</label>
       <input type="text" id="name" v-model="componentData.name" required />
@@ -80,7 +83,10 @@
 
     <div class="form-actions">
       <button type="submit" :disabled="isSaving">
-        {{ isSaving ? 'Saving...' : 'Save Meal Component' }}
+        {{ isSaving ? 'Saving...' : (isEditMode ? 'Update Component' : 'Save Meal Component') }}
+      </button>
+      <button type="button" @click="cancelEdit" class="cancel-btn">
+        Cancel
       </button>
     </div>
 
@@ -137,21 +143,32 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, watch, onMounted } from 'vue';
 import axios from 'axios'; // We'll need axios for API calls
+
+const props = defineProps({
+  componentDataToEdit: {
+    type: Object,
+    default: null
+  }
+});
+
+const emit = defineEmits(['form-closed', 'component-saved']);
 
 // console.log('Vite Env Variables:', import.meta.env); // Log all env vars
 // const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api'; // Old way
 const API_BASE_URL = process.env.VUE_APP_API_BASE_URL; // New way
 console.log('API_BASE_URL (from DefinePlugin):', API_BASE_URL);
 
-const componentData = reactive({
+const initialComponentData = () => ({
   name: '',
   category_tag: '',
   description_recipe: '',
-  frequency: 'PER_BOX', // Default value from model choices
-  ingredients_usage: [], // Array of { ingredient_id: id, quantity: number, ingredient_name: name }
+  frequency: 'PER_BOX',
+  ingredients_usage: [],
 });
+
+const componentData = reactive(initialComponentData());
 
 const ingredientSearchTerm = ref('');
 const searchResults = ref([]);
@@ -160,6 +177,63 @@ const searchedAndNoResults = ref(false);
 const nutritionalTotals = ref({});
 const isSaving = ref(false);
 const error = ref(null);
+
+const isEditMode = computed(() => !!props.componentDataToEdit);
+
+const populateFormForEdit = () => {
+  if (props.componentDataToEdit) {
+    console.log("Populating form for edit with:", JSON.parse(JSON.stringify(props.componentDataToEdit)));
+    Object.assign(componentData, {
+      name: props.componentDataToEdit.name || '',
+      category_tag: props.componentDataToEdit.category_tag || '',
+      description_recipe: props.componentDataToEdit.description_recipe || '',
+      frequency: props.componentDataToEdit.frequency || 'PER_BOX',
+      // Deep copy and map ingredients_usage if structure differs or needs processing
+      // Assuming componentDataToEdit.ingredientusage_set (from Django serializer)
+      // needs to be mapped to componentData.ingredients_usage
+      ingredients_usage: (props.componentDataToEdit.ingredientusage_set || []).map(usage => ({
+        ingredient_id: usage.ingredient_detail?.id || usage.ingredient, // Prefer detail if available
+        ingredient_name: usage.ingredient_detail?.name || usage.ingredient_name || 'Unknown Ingredient', // Prefer detail
+        quantity: usage.quantity,
+        // nutrient_links and base_unit_for_nutrition might need to be fetched again or ensured they exist on ingredient_detail
+        // For now, initialize and they can be enriched if selectIngredientForAddition is re-triggered somehow, or assume they are present
+        nutrient_links: usage.ingredient_detail?.nutrient_links || [],
+        base_unit_for_nutrition: usage.ingredient_detail?.base_unit_for_nutrition || 'g'
+      })),
+    });
+    // Fetch full ingredient details for nutrient_links if not present
+    // This is crucial for the live nutritional breakdown to work correctly in edit mode
+    componentData.ingredients_usage.forEach(async (usage) => {
+        if (usage.ingredient_id && (!usage.nutrient_links || usage.nutrient_links.length === 0)) {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/ingredients/${usage.ingredient_id}/`);
+                const fullIngredientData = response.data;
+                usage.nutrient_links = fullIngredientData.nutrient_links || [];
+                usage.base_unit_for_nutrition = fullIngredientData.base_unit_for_nutrition || 'g';
+                if (!usage.ingredient_name || usage.ingredient_name === 'Unknown Ingredient') {
+                    usage.ingredient_name = fullIngredientData.name;
+                }
+            } catch (err) {
+                console.error(`Failed to fetch details for ingredient ID ${usage.ingredient_id} during edit mode population:`, err);
+                // Potentially set an error message or handle missing data
+            }
+        }
+    });
+
+
+  } else {
+    // Reset form if not in edit mode (e.g., if form was used for edit then switched to create)
+    Object.assign(componentData, initialComponentData());
+  }
+};
+
+onMounted(() => {
+  populateFormForEdit();
+});
+
+watch(() => props.componentDataToEdit, () => {
+  populateFormForEdit();
+}, { deep: true });
 
 // Helper to format DRV values for display
 const formatDRV = (value) => {
@@ -388,18 +462,32 @@ const saveMealComponent = async () => {
   nutritionalTotals.value = {};
 
   const payload = {
-    ...componentData,
+    name: componentData.name,
+    category_tag: componentData.category_tag,
+    description_recipe: componentData.description_recipe,
+    frequency: componentData.frequency,
     ingredients_usage_write: componentData.ingredients_usage.map(u => ({
       ingredient: u.ingredient_id, 
       quantity: u.quantity
     }))
   };
-  delete payload.ingredients_usage;
+  // Do NOT delete payload.ingredients_usage here as it's not part of componentData directly anymore for submission
 
   try {
-    const response = await axios.post(`${API_BASE_URL}/mealcomponents/`, payload);
-    nutritionalTotals.value = response.data.nutritional_totals || {};
-    console.log('Saved component:', response.data); 
+    let response;
+    if (isEditMode.value) {
+      console.log('Updating component with ID:', props.componentDataToEdit.id);
+      response = await axios.put(`${API_BASE_URL}/mealcomponents/${props.componentDataToEdit.id}/`, payload);
+    } else {
+      response = await axios.post(`${API_BASE_URL}/mealcomponents/`, payload);
+    }
+    
+    nutritionalTotals.value = response.data.nutritional_totals || {}; // Update with fresh totals from backend
+    console.log(isEditMode.value ? 'Updated component:' : 'Saved new component:', response.data);
+    
+    // Emit an event with the saved/updated component data so the parent can react
+    emit('component-saved', response.data); 
+    // emit('form-closed', response.data); // Or form-closed if save always closes
 
   } catch (err) {
     console.error('Error saving meal component:', err.response ? err.response.data : err.message);
@@ -407,6 +495,10 @@ const saveMealComponent = async () => {
   } finally {
     isSaving.value = false;
   }
+};
+
+const cancelEdit = () => {
+  emit('form-closed', null); // Signal that the form was closed without saving
 };
 
 const getNutrientBarStyle = (nutrient) => {

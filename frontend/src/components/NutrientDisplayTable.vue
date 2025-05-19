@@ -23,7 +23,14 @@
         >
           <td>
             {{ nutrientKey }}
-            <span @click="$emit('nutrient-drilldown', { nutrientKey, nutrientData })" class="drilldown-icon" title="View Sources">ℹ️</span>
+            <button 
+              type="button"
+              @click="$emit('nutrient-drilldown', { nutrientKey, nutrientData })" 
+              class="details-button"
+              title="View Sources"
+            >
+              Details
+            </button>
           </td>
           <td class="nutrient-value-cell">
             {{ nutrientData.total.toFixed(displayConstants.MACRO_FDC_NUMBERS.includes(nutrientData.fdc_nutrient_number) ? 1 : 2) }} {{ nutrientData.unit }}
@@ -91,7 +98,7 @@ defineProps({
   }
 });
 
-const emit = defineEmits(['nutrient-drilldown']); // Define the event
+defineEmits(['nutrient-drilldown']); // Call defineEmits directly
 </script>
 
 <style scoped>
@@ -117,14 +124,54 @@ const emit = defineEmits(['nutrient-drilldown']); // Define the event
     display: none; /* No group headers for no-reference table */
 }
 
-.drilldown-icon {
-  margin-left: 8px;
+.details-button {
+  margin-left: 10px;
+  padding: 3px 8px;
+  font-size: 0.8em;
+  font-weight: 500;
+  color: var(--color-button-text, #ffffff); /* Default white text */
+  background-color: var(--color-primary, #007bff); /* Default primary blue */
+  border: 1px solid var(--color-primary-dark, #0056b3); /* Darker border for depth */
+  border-radius: 5px;
   cursor: pointer;
-  font-size: 0.9em;
-  color: var(--color-primary); /* Or any other suitable color */
+  text-decoration: none;
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  line-height: 1.2; /* Ensure text is centered vertically */
+  display: inline-flex; /* Align icon and text if an icon were added */
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
-.drilldown-icon:hover {
-  opacity: 0.7;
+.details-button:hover, 
+.details-button:focus {
+  background-color: var(--color-primary-dark, #0056b3); /* Darker blue on hover/focus */
+  border-color: var(--color-primary-darker, #004085); /* Even darker border */
+  color: var(--color-button-text-hover, #ffffff);
+  outline: none; /* Remove default focus outline if custom is handled or not needed */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+.details-button:active {
+  background-color: var(--color-primary-darker, #004085);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Example of how you might adjust for dark mode if not using auto-inverting variables */
+/* 
+@media (prefers-color-scheme: dark) {
+  .details-button {
+    color: var(--color-text-dark-primary, #e0e0e0); 
+    background-color: var(--color-primary-dark-theme, #228be6); 
+    border-color: var(--color-primary-dark-theme-border, #1c7ed6);
+  }
+  .details-button:hover, .details-button:focus {
+    background-color: var(--color-primary-dark-theme-hover, #1c7ed6);
+    border-color: var(--color-primary-dark-theme-border-hover, #156cb3);
+  }
+  .details-button:active {
+    background-color: var(--color-primary-dark-theme-active, #156cb3);
+  }
+}
+*/
 </style> 
