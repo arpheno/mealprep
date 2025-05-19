@@ -149,3 +149,7 @@ food-editor:
 	@echo "Starting Food Editor API using uvicorn..."
 	echo "Activating virtual environment..."; 
 	PYTHONPATH=food_editor_ui/backend . .venv/bin/activate && uvicorn app:app --reload --port 8008
+
+migrate: ## Create Django migrations in the web container
+	@echo "Making Django migrations..."
+	docker-compose exec web python manage.py migrate

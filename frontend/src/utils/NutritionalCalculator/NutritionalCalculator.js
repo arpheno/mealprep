@@ -1,5 +1,4 @@
 import { getGuessedFdcNumber } from './FdcNumberGuesser.js';
-import { getStandardizedUnitAndAmount } from './UnitStandardizer.js';
 
 /**
  * @typedef {object} ScaledNutrientContribution
@@ -66,14 +65,10 @@ class NutritionalCalculator {
       fdcNumForData = getGuessedFdcNumber(pureNutrientName, this.nutrientConstants, this.logger);
     }
 
-    const { amount: standardizedAmount, unit: standardizedUnit } = getStandardizedUnitAndAmount(
-      pureNutrientName,
-      fdcNumForData,
-      originalUnit,
-      originalAmount,
-      this.nutrientConstants,
-      this.logger
-    );
+    const standardizedAmount = originalAmount;
+    const standardizedUnit = originalUnit;
+
+    
 
     let displayKeyName = pureNutrientName;
     if (String(fdcNumForData) === String(this.nutrientConstants.FDC_NUM_FAT) && pureNutrientName.toLowerCase().includes("total lipid (fat)")) {

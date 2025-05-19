@@ -66,21 +66,6 @@ class Gender(models.TextChoices):
     PREFER_NOT_TO_SAY = 'NO_SAY', 'Prefer not to say'
     OTHER = 'OTHER', 'Other'
 
-class ActivityLevel(models.TextChoices):
-    SEDENTARY = 'SEDENTARY', 'Sedentary (little or no exercise)'
-    LIGHT = 'LIGHT', 'Lightly active (light exercise/sports 1-3 days/week)'
-    MODERATE = 'MODERATE', 'Moderately active (moderate exercise/sports 3-5 days/week)'
-    ACTIVE = 'ACTIVE', 'Very active (hard exercise/sports 6-7 days a week)'
-    EXTRA_ACTIVE = 'EXTRA_ACTIVE', 'Extra active (very hard exercise/sports & physical job)'
-
-class ProteinTargetStrategy(models.TextChoices):
-    STANDARD_RDA = 'RDA', 'Standard RDA (e.g., 0.8g/kg)'
-    MODERATE_1_2 = 'MOD_1_2', 'Moderate (1.2g/kg)'
-    MODERATE_1_5 = 'MOD_1_5', 'Moderate (1.5g/kg)'
-    HIGH_1_8 = 'HIGH_1_8', 'High (1.8g/kg)'
-    HIGH_2_0 = 'HIGH_2_0', 'High (2.0g/kg)'
-    HIGH_2_2 = 'HIGH_2_2', 'High (2.2g/kg)'
-    CUSTOM_GRAMS = 'CUSTOM', 'Custom Grams'
 
 class MealComponentFrequency(models.TextChoices):
     PER_MEAL_BOX = 'PER_BOX', 'Per Meal Box'
@@ -233,11 +218,6 @@ class IngredientNutrientLink(models.Model):
 class PersonProfile(models.Model):
     # user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, help_text="Link to Django User model")
     name = models.CharField(max_length=100, help_text='Display name for the profile')
-    age_years = models.PositiveIntegerField(blank=True, null=True)
-    gender = models.CharField(max_length=10, choices=Gender.choices, blank=True, null=True)
-    weight_kg = models.FloatField(blank=True, null=True, validators=[MinValueValidator(0)])
-    height_cm = models.FloatField(blank=True, null=True, validators=[MinValueValidator(0)])
-    activity_level = models.CharField(max_length=20, choices=ActivityLevel.choices, blank=True, null=True)
     custom_nutrient_targets = models.JSONField(
         blank=True, # Blank is okay as default will fill it
         null=False, # Should always have a dict, even if empty, due to default
@@ -468,10 +448,6 @@ class MealPlanItem(models.Model):
     meal_plan = models.ForeignKey('MealPlan', on_delete=models.CASCADE, related_name='plan_items')
     meal_component = models.ForeignKey(MealComponent, on_delete=models.CASCADE, related_name='used_in_plans_as_item')
     
-    # People specifically assigned to this meal component instance within this plan.
-    # If empty, it could imply it's for everyone in the plan's target_people_profiles (convention-based),
-    # OR the convention could be that 'for everyone' means explicitly linking all target_people_profiles.
-    # Based on user feedback, we will explicitly link all target_people_profiles if it's for everyone.
     assigned_people = models.ManyToManyField(
         PersonProfile, 
         related_name='meal_plan_items', 
@@ -507,134 +483,6 @@ class MealPlan(models.Model):
     creation_date = models.DateTimeField(auto_now_add=True)
     last_modified_date = models.DateTimeField(auto_now=True)
 
-    def get_plan_nutritional_totals(self):
-        """
-        Calculates the sum of each nutrient for the entire meal plan based on its items,
-        component frequencies, plan duration, servings per day, and assigned people per item.
-        Returns a dictionary like: {'Nutrient Name': {'amount': X, 'unit': 'Y'}, ...}
-        """
-        plan_totals = defaultdict(lambda: {'amount': 0, 'unit': ''})
-
-        if not self.pk: # Not saved yet, no items to calculate from
-            return {}
-
-        # Efficiently fetch related data
-        plan_items_with_details = self.plan_items.all().select_related(
-            'meal_component'
-        ).prefetch_related(
-            'meal_component__ingredientusage_set__ingredient__ingredientnutrientlink_set__nutrient',
-            'assigned_people'
-        )
-
-        for plan_item in plan_items_with_details:
-            component = plan_item.meal_component
-            component_nutrition = component.get_nutritional_totals() # This is per one instance of the component
-            
-            # Number of people this specific plan item is for.
-            # If an item has no assigned people, it doesn't contribute to the total nutrients prepared.
-            # (Alternative: if 0 means "all plan members", then use self.target_people_profiles.count() or default to 1 if no plan members)
-            num_people_for_this_item = plan_item.assigned_people.count()
-            if num_people_for_this_item == 0:
-                # If a plan item is not assigned to anyone, it doesn't contribute to totals.
-                # Or, if your convention is that unassigned = for all people in plan, you'd adjust here.
-                # For now, explicit assignment is required for an item to count towards totals.
-                # If there are no people in the *entire plan*, we might default to 1 to avoid division by zero elsewhere
-                # but for *this item*, 0 assigned people means 0 contribution from it.
-                continue 
-
-            # Determine how many times this component's nutrition is counted over the plan duration for ONE person
-            consumption_multiplier_per_person = 0
-            if component.frequency == MealComponentFrequency.PER_MEAL_BOX:
-                total_servings_per_person = self.duration_days * self.servings_per_day_per_person 
-                consumption_multiplier_per_person = total_servings_per_person
-            elif component.frequency == MealComponentFrequency.DAILY_TOTAL:
-                consumption_multiplier_per_person = self.duration_days
-            elif component.frequency == MealComponentFrequency.WEEKLY_TOTAL:
-                consumption_multiplier_per_person = self.duration_days / 7.0
-            else: # Should not happen if data is clean
-                consumption_multiplier_per_person = 1 # Default fallback
-            
-            for nutrient_name, data in component_nutrition.items():
-                # Total amount for this nutrient from this component item = (amount per component) * (how often one person eats it) * (how many people eat this item)
-                nutrient_amount_from_item = data['amount'] * consumption_multiplier_per_person * num_people_for_this_item
-                plan_totals[nutrient_name]['amount'] += nutrient_amount_from_item
-                if not plan_totals[nutrient_name]['unit']:
-                    plan_totals[nutrient_name]['unit'] = data['unit']
-
-        # Round amounts for cleaner display
-        for nutrient_name in plan_totals:
-            plan_totals[nutrient_name]['amount'] = round(plan_totals[nutrient_name]['amount'], 2)
-            
-        return dict(plan_totals)
-
-    def get_plan_nutritional_targets(self):
-        """
-        Calculates the sum of personalized DRVs for all target people in the plan.
-        Returns a dictionary like: {'Nutrient Name': {'rda': X, 'ul': Y, 'unit': 'Z'}, ...}
-        RDAs are summed. ULs are taken as the minimum non-null UL among profiles for that nutrient.
-        """
-        if not self.pk or not self.target_people_profiles.exists():
-            return {}
-
-        plan_targets_sum_rda = defaultdict(lambda: {'amount': 0, 'unit': None, 'name': None})
-        plan_targets_min_ul = defaultdict(lambda: {'amount': float('inf'), 'unit': None, 'name': None})
-        # Use a set to store nutrient objects to ensure we only process each nutrient once for ULs
-        processed_nutrients_for_ul = defaultdict(list)
-
-        profiles = self.target_people_profiles.all()
-        num_profiles = profiles.count()
-
-        if num_profiles == 0:
-            return {}
-
-        for profile in profiles:
-            person_drvs = profile.get_personalized_drvs() # This returns {nutrient_name: {rda, ul, unit}}
-            for nutrient_name, drv_data in person_drvs.items():
-                key = nutrient_name # Use name as the primary key for aggregation
-
-                if drv_data['rda'] is not None:
-                    plan_targets_sum_rda[key]['amount'] += drv_data['rda']
-                if plan_targets_sum_rda[key]['unit'] is None:
-                    plan_targets_sum_rda[key]['unit'] = drv_data['unit']
-                if plan_targets_sum_rda[key]['name'] is None:
-                    plan_targets_sum_rda[key]['name'] = nutrient_name
-
-                if drv_data['ul'] is not None:
-                    # Collect all ULs for this nutrient from different profiles
-                    processed_nutrients_for_ul[key].append(drv_data['ul'])
-                    if plan_targets_min_ul[key]['unit'] is None:
-                         plan_targets_min_ul[key]['unit'] = drv_data['unit'] # Assume unit is consistent for UL
-                    if plan_targets_min_ul[key]['name'] is None:
-                         plan_targets_min_ul[key]['name'] = nutrient_name
-        #
-        # Consolidate into final structure
-        final_plan_targets = {}
-        all_nutrient_keys = set(plan_targets_sum_rda.keys()) | set(plan_targets_min_ul.keys())
-
-        for key in all_nutrient_keys:
-            rda_data = plan_targets_sum_rda.get(key)
-            ul_data_list = processed_nutrients_for_ul.get(key)
-
-            final_rda = rda_data['amount'] if rda_data and rda_data['amount'] > 0 else None
-            final_unit = (rda_data['unit'] if rda_data else None) or plan_targets_min_ul.get(key, {}).get('unit')
-            # Determine the final UL: the minimum of all collected ULs for this nutrient
-            # If no ULs were found for any profile for this nutrient, it remains None.
-            min_ul_value = None
-            if ul_data_list:
-                non_null_uls = [ul for ul in ul_data_list if ul is not None]
-                if non_null_uls:
-                    min_ul_value = min(non_null_uls)
-
-            nutrient_display_name = (rda_data['name'] if rda_data else None) or plan_targets_min_ul.get(key, {}).get('name') or key
-
-            if final_rda is not None or min_ul_value is not None: # Only include if there's an RDA or UL
-                final_plan_targets[nutrient_display_name] = {
-                    'rda': final_rda,
-                    'ul': min_ul_value,
-                    'unit': final_unit
-                }
-
-        return final_plan_targets
 
     def __str__(self):
         return self.name

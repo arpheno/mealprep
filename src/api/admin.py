@@ -50,15 +50,11 @@ class MealComponentAdmin(admin.ModelAdmin):
 
 @admin.register(PersonProfile)
 class PersonProfileAdmin(admin.ModelAdmin):
-    list_display = ('name', 'age_years', 'gender', 'weight_kg', 'activity_level')
-    list_filter = ('gender', 'activity_level')
-    search_fields = ('name', 'notes')
+    list_display = ('name', )
+    search_fields = ('name',)
     fieldsets = (
         (None, {
-            'fields': ('name', 'notes')
-        }),
-        ('Physical Characteristics', {
-            'fields': ('age_years', 'gender', 'weight_kg', 'height_cm', 'activity_level')
+            'fields': ('name',)
         }),
         ('Dietary Targets', {
             'fields': ('custom_nutrient_targets',)
