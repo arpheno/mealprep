@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from collections import defaultdict
 
-# --- Helper function for PersonProfile default nutrient targets ---
+
 def get_default_nutrient_targets():
     # This function is called when a new PersonProfile is created.
     # It attempts to find common nutrients (Energy, Protein) and set default targets.
@@ -35,7 +35,6 @@ def get_default_nutrient_targets():
     return defaults
 
 # --- Enums as Django Choices --- 
-
 class NutrientCategory(models.TextChoices):
     MACRONUTRIENT = 'MACRO', 'Macronutrient'
     VITAMIN = 'VITAMIN', 'Vitamin'
@@ -131,38 +130,65 @@ class Nutrient(models.Model):
 
     objects = NutrientManager() # Add the custom manager
 
+    def get_generic_drv(self, drv_type='rda'):
+        """
+        Helper to get a generic DRV value (RDA or UL) for this nutrient.
+        You'll need to define what constitutes a "generic" or "default" DRV.
+        This is a placeholder for that logic.
+        It attempts to find a DRV for adults.
+        """
+        from django.db.models import Q  # Ensure Q is imported
+
+        # Attempt to find a DRV for a general adult population.
+        # This query is an example and might need adjustment based on your DRV data specifics
+        # (e.g., exact strings for target_population, age_range_text, or how gender is handled for defaults).
+        # It also doesn't currently differentiate by gender for this generic lookup.
+        generic_adult_drvs = self.drvs.filter(
+            Q(target_population__icontains='Adult') | Q(target_population__icontains='Adults') |
+            Q(age_range_text__icontains='18-') | Q(age_range_text__icontains='19-') | 
+            Q(age_range_text__icontains='≥18') | Q(age_range_text__icontains='≥19')
+        )
+
+        if not generic_adult_drvs.exists():
+            # Fallback: if no specific adult DRV, take any DRV available, preferring those with PRI/AI or UL
+            generic_adult_drvs = self.drvs.all()
+
+
+        value = None
+        if drv_type == 'rda':
+            # Prioritize PRI, then AI for RDA
+            drv = generic_adult_drvs.filter(pri__isnull=False).order_by('pri').first() # Order by pri to get a value, not necessarily lowest/highest specific one
+            if drv:
+                value = drv.pri
+            else:
+                drv = generic_adult_drvs.filter(ai__isnull=False).order_by('ai').first()
+                if drv:
+                    value = drv.ai
+        elif drv_type == 'ul':
+            # For UL, typically any UL found for adults might be relevant, often the lowest is safest if multiple exist.
+            drv = generic_adult_drvs.filter(ul__isnull=False).order_by('ul').first() # Get the lowest UL among adults
+            if drv:
+                value = drv.ul
+        
+        # print(f"Nutrient: {self.name}, DRV Type: {drv_type}, Found Value: {value}") # For debugging
+        return value
+
+    def get_default_rda(self):
+        # This method should return the default RDA value for the nutrient.
+        # Placeholder: return a fixed value or look up from a default DRV.
+        # For now, let's try to get it from DietaryReferenceValue for a general adult.
+        return self.get_generic_drv(drv_type='rda')
+
+    def get_upper_limit(self):
+        # This method should return the default UL value for the nutrient.
+        # Placeholder: return a fixed value or look up from a default DRV.
+        return self.get_generic_drv(drv_type='ul')
+
     def __str__(self):
         return f'{self.name} ({self.unit})'
 
     class Meta:
         ordering = ['name']
-
-    def get_default_rda(self):
-        """
-        Attempts to find a default Recommended Dietary Allowance (RDA) value
-        from its related DietaryReferenceValue objects.
-        Placeholder: Fetches PRI for 'Adults' if available.
-        """
-        # Prioritize PRI for a general adult population
-        drv = self.drvs.filter(target_population__icontains='Adults', pri__isnull=False).first()
-        if drv:
-            return drv.pri
-        # Fallback to AI if PRI not found
-        drv = self.drvs.filter(target_population__icontains='Adults', ai__isnull=False).first()
-        if drv:
-            return drv.ai
-        return None
-
-    def get_upper_limit(self):
-        """
-        Attempts to find an Upper Limit (UL) value
-        from its related DietaryReferenceValue objects.
-        Placeholder: Fetches UL for 'Adults' if available.
-        """
-        drv = self.drvs.filter(target_population__icontains='Adults', ul__isnull=False).first()
-        if drv:
-            return drv.ul
-        return None
 
 class NutrientAlias(models.Model):
     name = models.CharField(max_length=255, unique=True, help_text="An alternative name or symbol for a nutrient (e.g., 'Vitamin B2', 'Thiamin'). Must be unique.")
@@ -222,80 +248,219 @@ class PersonProfile(models.Model):
         blank=True, # Blank is okay as default will fill it
         null=False, # Should always have a dict, even if empty, due to default
         default=get_default_nutrient_targets, 
-        help_text='Store custom nutrient targets, e.g., {"NutrientName": {"target": 100, "unit": "mg", "is_override": true}}'
+        help_text='Custom nutrient targets for this person, overriding default DRVs. Format: {"Nutrient Name": {"target": value, "unit": "unit", "is_override": true}}'
     )
     notes = models.TextField(blank=True, null=True)
+    gender = models.CharField(
+        max_length=10,
+        choices=Gender.choices,
+        null=True,
+        blank=True,
+        help_text="Gender of the person"
+    )
+    age = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Age of the person in years. Used for DRV calculations."
+    )
 
-    def get_personalized_drvs(self):
+    def _parse_age_range(self, age_range_text, person_age_years):
         """
-        Calculates personalized Daily Recommended Values for this person, 
-        considering general DRVs and specific overrides from their profile.
-        Returns a dictionary: {nutrient_name: {'rda': float/None, 'ul': float/None, 'unit': str}}
-        All RDA/UL values are returned in the nutrient's canonical unit if it's a system nutrient,
-        or the unit specified in custom_targets if it's a purely custom nutrient.
+        Parses DRV age_range_text and checks if person_age_years falls within it.
+        Handles formats like: "X-Y years", "≥X years", "<X years", "X-Y months".
+        Returns True if age matches, False otherwise.
         """
-        personalized_values = {}
-        all_system_nutrients = Nutrient.objects.all()
-        system_nutrient_names = {n.name for n in all_system_nutrients}
-
-        # Step 1: Process all system nutrients (from Nutrient table)
-        for nutrient in all_system_nutrients:
-            base_rda = nutrient.get_default_rda() # Fetches from DRV model, e.g., PRI for Adults
-            base_ul = nutrient.get_upper_limit()   # Fetches from DRV model, e.g., UL for Adults
-            canonical_unit = nutrient.unit
-
-            current_rda = base_rda
-            current_ul = base_ul
-            # The unit for this nutrient will be its canonical unit.
-            # If custom_targets specify a different unit, it's for user input convenience;
-            # the value should ideally be pre-converted or understood to be in the canonical unit.
-
-            if self.custom_nutrient_targets and nutrient.name in self.custom_nutrient_targets:
-                custom_spec = self.custom_nutrient_targets[nutrient.name]
-                
-                # RDA override logic:
-                # 'target' in custom_spec is considered the RDA.
-                # It overrides if 'is_override' is true, or if no base_rda exists.
-                if custom_spec.get('is_override', False) or base_rda is None:
-                    if 'target' in custom_spec:
-                        current_rda = custom_spec['target']
-                elif 'target' in custom_spec and current_rda is None: # Not an override, but base was None, so use custom.
-                    current_rda = custom_spec['target']
-
-                # UL override logic:
-                # Custom 'ul' always overrides the base_ul if present.
-                if 'ul' in custom_spec:
-                    current_ul = custom_spec['ul']
-                
-                # Check for unit mismatch in custom_targets, but do not change canonical_unit for system nutrients.
-                # The values in custom_spec ('target', 'ul') are assumed to be interpretable in the canonical_unit.
-                if 'unit' in custom_spec and custom_spec['unit'] != canonical_unit:
-                    # This is a good place for logging in a real application.
-                    print(f"INFO: PersonProfile '{self.name}' has custom target for '{nutrient.name}' with unit '{custom_spec['unit']}', "
-                          f"but canonical unit is '{canonical_unit}'. Values are assumed to be in canonical unit or pre-converted.")
+        if not person_age_years: # Cannot determine if age is unknown
+            return False
             
-            # Include the nutrient if it has an RDA, a UL, or was mentioned in custom_targets (even if values are null)
-            # This ensures that if a user customizes a nutrient (e.g., sets RDA to 0 or UL to null), it's still part of their profile.
-            if current_rda is not None or current_ul is not None or (self.custom_nutrient_targets and nutrient.name in self.custom_nutrient_targets):
-                personalized_values[nutrient.name] = {
-                    'rda': current_rda,
-                    'ul': current_ul,
-                    'unit': canonical_unit
+        age_range_text = age_range_text.lower().strip()
+
+        # Months handling (simplistic: assumes age < 1 year is 0, DRVs handle months)
+        if "months" in age_range_text or "month" in age_range_text:
+            if person_age_years == 0: # Check for <1 year old
+                try:
+                    parts = age_range_text.replace("months", "").replace("month", "").strip().split('-')
+                    min_months = int(parts[0].strip())
+                    # For ranges like "7-11 months"
+                    if len(parts) == 2:
+                        max_months = int(parts[1].strip())
+                        # This logic is tricky as person_age is in years.
+                        # A person with age 0 could be 0-11 months.
+                        # This requires DRVs to be very specific for <1 year or PersonProfile to store months for <1 year.
+                        # For now, if DRV is for months and person_age is 0, we assume it could match.
+                        # This is a simplification and might need refinement.
+                        return True # Simplified: if person is <1yr and DRV is in months, assume potential match
+                    # For single month values e.g. "6 months" (less common for ranges)
+                    # This simplistic approach assumes if a DRV is specified in months, and the person is 0 years old, it *could* apply.
+                    # A more robust solution would require storing age in months for infants or more detailed DRV age fields.
+                    return True
+                except ValueError:
+                    return False # Cannot parse month range
+            else:
+                return False # Person is >= 1 year, but DRV is in months
+
+        # Years handling
+        try:
+            if "≥" in age_range_text or ">=" in age_range_text:
+                min_age = int(age_range_text.replace("≥", "").replace(">=", "").replace("years", "").strip())
+                return person_age_years >= min_age
+            elif "≤" in age_range_text or "<=" in age_range_text:
+                max_age = int(age_range_text.replace("≤", "").replace("<=", "").replace("years", "").strip())
+                return person_age_years <= max_age
+            elif "<" in age_range_text:
+                max_age = int(age_range_text.replace("<", "").replace("years", "").strip())
+                return person_age_years < max_age
+            elif ">" in age_range_text:
+                min_age = int(age_range_text.replace(">", "").replace("years", "").strip())
+                return person_age_years > min_age
+            elif "-" in age_range_text:
+                parts = age_range_text.replace("years", "").strip().split('-')
+                if len(parts) == 2:
+                    min_age = int(parts[0].strip())
+                    max_age = int(parts[1].strip())
+                    return min_age <= person_age_years <= max_age
+            else: # Try to parse as a single age year, e.g. "18 years" (less common for ranges)
+                single_age = int(age_range_text.replace("years", "").strip())
+                return person_age_years == single_age
+        except ValueError:
+            return False # Cannot parse year range
+        return False
+
+    def get_complete_drvs(self):
+        """
+        Retrieves all applicable DRVs for the person based on their age and gender,
+        then applies any custom overrides.
+        DRV types are prioritized: PRI (as RDA), then AI (as RDA if PRI not present), then UL.
+        """
+        if self.age is None or self.gender is None:
+            # If age or gender is not set, we can't reliably determine DRVs.
+            # Return custom targets only, or empty if none.
+            # Or, could try to fetch "generic" DRVs not specific to age/gender.
+            # For now, returning custom targets or empty.
+            # Frontend expects nutrientKey: {rda, ul, unit, fdc_nutrient_number}
+            
+            # Process custom_nutrient_targets to fit the expected structure
+            processed_custom_targets = {}
+            if isinstance(self.custom_nutrient_targets, dict):
+                for name, data in self.custom_nutrient_targets.items():
+                    # Attempt to find the nutrient to get its canonical unit and FDC number
+                    nutrient_obj = Nutrient.objects.filter_by_name_or_alias(name).first()
+                    unit = data.get("unit", nutrient_obj.unit if nutrient_obj else None)
+                    fdc_num = nutrient_obj.fdc_nutrient_number if nutrient_obj else None
+                    nutrient_key = f"{name} ({unit})" if unit else name
+
+                    processed_custom_targets[nutrient_key] = {
+                        "rda": data.get("target"), # Assuming "target" is RDA
+                        "ul": None, # Custom targets usually specify RDA/target, not UL
+                        "ai": None, # And not AI
+                        "unit": unit,
+                        "fdc_nutrient_number": fdc_num,
+                        "source": "custom_override"
+                    }
+            return processed_custom_targets
+
+        complete_drvs = {}
+        
+        # Filter DRVs:
+        # 1. Match gender: either person's gender or DRV gender is null/blank (applies to all)
+        #    Gender.OTHER and Gender.PREFER_NOT_TO_SAY on PersonProfile might match DRVs with gender=null.
+        gender_q = Q(gender=self.gender) | Q(gender__isnull=True) | Q(gender='')
+        if self.gender in [Gender.OTHER, Gender.PREFER_NOT_TO_SAY]:
+            # For OTHER/NO_SAY, primarily rely on DRVs with null gender (meant for all)
+            # or DRVs specifically marked for OTHER if such data exists.
+            # This simplifies to effectively matching non-gender-specific DRVs primarily.
+            gender_q = Q(gender__isnull=True) | Q(gender='') | Q(gender=self.gender)
+
+
+        applicable_drvs = DietaryReferenceValue.objects.filter(gender_q)
+        
+        # Further filter by age text parsing
+        # This is done in Python as it's complex for direct ORM query
+        matched_by_age_drvs = []
+        for drv_instance in applicable_drvs:
+            if self._parse_age_range(drv_instance.age_range_text, self.age):
+                matched_by_age_drvs.append(drv_instance)
+
+        for drv in matched_by_age_drvs:
+            nutrient = drv.nutrient
+            nutrient_key = f"{nutrient.name} ({nutrient.unit})" # Standardized key
+
+            if nutrient_key not in complete_drvs:
+                complete_drvs[nutrient_key] = {
+                    "rda": None, "ul": None, "ai": None, # Initialize
+                    "unit": nutrient.unit,
+                    "fdc_nutrient_number": nutrient.fdc_nutrient_number,
+                    "source": "base_drv"
                 }
 
-        # Step 2: Add purely custom nutrients (defined in custom_nutrient_targets but not in Nutrient table)
-        if self.custom_nutrient_targets:
-            for nutrient_name, targets_spec in self.custom_nutrient_targets.items():
-                if nutrient_name not in system_nutrient_names:
-                    # This nutrient is not a system nutrient, so it wasn't processed above.
-                    # We take its definition (rda, ul, unit) directly from custom_nutrient_targets.
-                    personalized_values[nutrient_name] = {
-                        'rda': targets_spec.get('target'), # 'target' field is used for RDA
-                        'ul': targets_spec.get('ul'),
-                        'unit': targets_spec.get('unit', '') # Default to empty string if no unit specified
-                    }
+            # Prioritize PRI as RDA, then AI as RDA
+            if drv.pri is not None:
+                if complete_drvs[nutrient_key]["rda"] is None: # Only set if not already set by a higher priority PRI
+                    complete_drvs[nutrient_key]["rda"] = drv.pri
+            if drv.ai is not None:
+                if complete_drvs[nutrient_key]["rda"] is None: # AI is used if PRI (primary RDA) is not available
+                     complete_drvs[nutrient_key]["ai"] = drv.ai # Store AI separately or merge based on strategy
+                     # For now, let's assume frontend wants one "rda" value, so if rda is still None, use AI
+                     complete_drvs[nutrient_key]["rda"] = drv.ai
+
+
+            if drv.ul is not None:
+                # If multiple ULs match (e.g. from different source_data_category for same nutrient but should be rare for same age/sex)
+                # take the lowest (most restrictive) UL.
+                if complete_drvs[nutrient_key]["ul"] is None or drv.ul < complete_drvs[nutrient_key]["ul"]:
+                    complete_drvs[nutrient_key]["ul"] = drv.ul
         
-        return personalized_values
+        # Apply custom overrides
+        if isinstance(self.custom_nutrient_targets, dict):
+            for name, data in self.custom_nutrient_targets.items():
+                # Attempt to find the nutrient to get its canonical unit and FDC number for key construction
+                nutrient_obj = Nutrient.objects.filter_by_name_or_alias(name).first()
+                unit_from_data = data.get("unit")
+                
+                # Determine unit: 1. From data, 2. From nutrient_obj, 3. Fallback to None
+                final_unit = unit_from_data if unit_from_data else (nutrient_obj.unit if nutrient_obj else None)
+                
+                # If unit is still None, we can't form the key correctly, or it might lead to issues.
+                # Log this or handle as an error. For now, we'll use the name as key if unit is None.
+                nutrient_key = f"{name} ({final_unit})" if final_unit else name
+                
+                fdc_num = nutrient_obj.fdc_nutrient_number if nutrient_obj else None
+
+                if nutrient_key not in complete_drvs:
+                    complete_drvs[nutrient_key] = {
+                        "rda": None, "ul": None, "ai": None, 
+                        "unit": final_unit, 
+                        "fdc_nutrient_number": fdc_num,
+                        "source": "custom_override"
+                    }
+                
+                # Override RDA with "target" from custom_nutrient_targets
+                if "target" in data and data["target"] is not None:
+                    complete_drvs[nutrient_key]["rda"] = data["target"]
+                    complete_drvs[nutrient_key]["unit"] = final_unit # Ensure unit from override is used
+                    complete_drvs[nutrient_key]["source"] = "custom_override"
+                    if nutrient_obj and not complete_drvs[nutrient_key]["fdc_nutrient_number"]:
+                        complete_drvs[nutrient_key]["fdc_nutrient_number"] = nutrient_obj.fdc_nutrient_number
+                
+                # Custom targets might also specify UL or AI, though less common for "target" field
+                # if "ul" in data: complete_drvs[nutrient_key]["ul"] = data["ul"]
+                # if "ai" in data: complete_drvs[nutrient_key]["ai"] = data["ai"]
+        
+        # Clean up: remove ai if rda (from pri) was found, or decide if frontend wants both
+        # For now, if rda is populated (from PRI or AI), we don't need separate ai field in the final output,
+        # unless frontend is specifically designed to use AI when RDA is an estimate.
+        # The current logic sets rda = ai if pri is not found. So `ai` field itself is redundant in final output.
+        for key in list(complete_drvs.keys()):
+            if "ai" in complete_drvs[key]: # And rda is already set
+                 del complete_drvs[key]["ai"] # Remove intermediate 'ai' field
+            # If RDA is still None after all processing (e.g. only UL was found, no PRI/AI)
+            # and no custom override, it remains None.
+            if complete_drvs[key]["rda"] is None and \
+               complete_drvs[key]["ul"] is None and \
+               complete_drvs[key].get("source") != "custom_override": # Don't remove if it's a custom entry even if empty
+                del complete_drvs[key] # Remove nutrients for which no values could be found
+
+        return complete_drvs
 
     def __str__(self):
         return self.name
@@ -536,10 +701,6 @@ class FoodPortion(models.Model):
 
     class Meta:
         ordering = ['ingredient__name', 'sequence_number', 'gram_weight']
-        # Consider unique_together if needed, e.g.:
-        # unique_together = [['ingredient', 'portion_description', 'gram_weight']]
-        # Or if fdc_portion_id is reliable and unique per ingredient:
-        # unique_together = [['ingredient', 'fdc_portion_id']]
         
     def __str__(self):
         return f"{self.portion_description} ({self.gram_weight}g) for {self.ingredient.name}"

@@ -47,14 +47,13 @@ class MealComponentAdmin(admin.ModelAdmin):
     # filter_horizontal = ('ingredients',)
 
 # No need to register IngredientUsage separately if it's only used as an inline
-
 @admin.register(PersonProfile)
 class PersonProfileAdmin(admin.ModelAdmin):
-    list_display = ('name', )
+    list_display = ('name', 'age', 'gender')
     search_fields = ('name',)
     fieldsets = (
         (None, {
-            'fields': ('name',)
+            'fields': ('name', 'age', 'gender')
         }),
         ('Dietary Targets', {
             'fields': ('custom_nutrient_targets',)

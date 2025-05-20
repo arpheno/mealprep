@@ -166,6 +166,7 @@ const handlePersonAdded = (personProfile) => {
             selectedPeopleObjects.value.push(personProfile); // Add what we received as a fallback
         }
     }
+    console.log('[MealPlanForm] Updated selectedPeopleObjects after add:', JSON.parse(JSON.stringify(selectedPeopleObjects.value))); // Log here
      // Ensure new person is assigned to existing components if they were previously unassigned to anyone specific
     // OR if a global assignment strategy is desired upon adding a new person. Current logic assigns to all if selected.
     addedMealComponents.value.forEach(item => {
@@ -184,6 +185,7 @@ const handlePersonRemoved = (personProfile) => {
   }
   planData.value.target_people_ids = planData.value.target_people_ids.filter(id => id !== personProfile.id);
   selectedPeopleObjects.value = selectedPeopleObjects.value.filter(p => p.id !== personProfile.id);
+  console.log('[MealPlanForm] Updated selectedPeopleObjects after remove:', JSON.parse(JSON.stringify(selectedPeopleObjects.value))); // Log here
 
   // Also remove this person from any component assignments
   addedMealComponents.value.forEach(itemInPlan => {
@@ -282,93 +284,86 @@ const getHardcodedNutrientGroup = (nutrientName, fdcNumber) => {
 };
 
 const derivedPlanTargets = computed(() => {
+  console.log('[MealPlanForm] Recalculating derivedPlanTargets. Selected People:', JSON.parse(JSON.stringify(selectedPeopleObjects.value)));
   const combinedTargets = {};
   const individualTargets = {};
-  let hasAnyRdaOrUl = false;
-
-  // Initialize combinedTargets with all system nutrients from the first available person's DRVs 
-  // or a fallback structure if no people are selected yet or if DRVs are sparse.
-  // This is a simplified approach; ideally, you'd have a base list of all possible nutrients.
-  // For now, we build it dynamically.
+  let hasAnyRdaOrUlOverall = false; // Tracks if any RDA or UL value is found across all people and nutrients
   const allNutrientKeysInPlan = new Set();
 
+  // Step 1: Populate individualTargets and gather all nutrient keys
   selectedPeopleObjects.value.forEach(person => {
-    if (person.personalized_drvs) {
-      Object.keys(person.personalized_drvs).forEach(key => {
-        allNutrientKeysInPlan.add(key);
-      });
-    }
-  });
-
-  allNutrientKeysInPlan.forEach(key => {
-    combinedTargets[key] = { rda: 0, ul: null, unit: '', fdc_nutrient_number: null };
-  });
-
-
-  selectedPeopleObjects.value.forEach(person => {
-    individualTargets[person.id] = {};
-    if (person.personalized_drvs) {
-      // Store a deep copy for individual use to avoid unintended mutations if DRV objects are reused.
-      // Also, ensure all nutrients from combinedTargets are present for consistency.
-      allNutrientKeysInPlan.forEach(key => {
-        const drv = person.personalized_drvs[key];
-        individualTargets[person.id][key] = drv 
-            ? JSON.parse(JSON.stringify(drv)) 
-            : { rda: null, ul: null, unit: combinedTargets[key]?.unit || '', fdc_nutrient_number: combinedTargets[key]?.fdc_nutrient_number || null };
-      });
-      
-      // Aggregate for combined targets
-      for (const nutrientKey in person.personalized_drvs) {
-        const drv_values = person.personalized_drvs[nutrientKey];
-        if (!combinedTargets[nutrientKey]) { // Should be initialized above, but as a safeguard
-          combinedTargets[nutrientKey] = { rda: 0, ul: null, unit: drv_values.unit || '', fdc_nutrient_number: drv_values.fdc_nutrient_number || null };
-        } else { // Ensure unit and FDC number are set if missing from initial pass
-             if (!combinedTargets[nutrientKey].unit && drv_values.unit) combinedTargets[nutrientKey].unit = drv_values.unit;
-             if (!combinedTargets[nutrientKey].fdc_nutrient_number && drv_values.fdc_nutrient_number) combinedTargets[nutrientKey].fdc_nutrient_number = drv_values.fdc_nutrient_number;
-        }
-
-        if (drv_values.rda !== null && drv_values.rda !== undefined) {
-          combinedTargets[nutrientKey].rda += drv_values.rda;
-          hasAnyRdaOrUl = true;
-        }
-        if (drv_values.ul !== null && drv_values.ul !== undefined) {
-          hasAnyRdaOrUl = true;
-          if (combinedTargets[nutrientKey].ul === null || drv_values.ul < combinedTargets[nutrientKey].ul) {
-            combinedTargets[nutrientKey].ul = drv_values.ul;
-          }
-        }
+    if (person && person.id) {
+      if (person.personalized_drvs && typeof person.personalized_drvs === 'object') {
+        individualTargets[person.id] = JSON.parse(JSON.stringify(person.personalized_drvs));
+        Object.keys(person.personalized_drvs).forEach(key => {
+          allNutrientKeysInPlan.add(key);
+        });
+      } else {
+        // If a person has no DRVs, initialize an empty object for them
+        individualTargets[person.id] = {};
+        console.warn(`[MealPlanForm] Person ${person.name} (ID: ${person.id}) has no personalized_drvs object or it's not an object.`);
       }
     } else {
-        // If a person has no personalized_drvs, ensure their entry exists with null/default values for all keys
-        allNutrientKeysInPlan.forEach(key => {
-            individualTargets[person.id][key] = { 
-                rda: null, 
-                ul: null, 
-                unit: combinedTargets[key]?.unit || '', 
-                fdc_nutrient_number: combinedTargets[key]?.fdc_nutrient_number || null 
-            };
-        });
+        console.warn('[MealPlanForm] Encountered a person object without an ID in selectedPeopleObjects during DRV processing.');
     }
   });
+  console.log('[MealPlanForm] All nutrient keys gathered from selected people:', Array.from(allNutrientKeysInPlan));
+  console.log('[MealPlanForm] Initial individualTargets:', JSON.parse(JSON.stringify(individualTargets)));
 
-  // Filter out nutrients from combinedTargets that ended up with no RDA and no UL,
-  // unless they were present in at least one person's DRVs (even if values were null).
-  const finalCombinedTargets = {};
-  for (const key in combinedTargets) {
-    if ((combinedTargets[key].rda !== 0 && combinedTargets[key].rda !== null) || combinedTargets[key].ul !== null || allNutrientKeysInPlan.has(key)) {
-       finalCombinedTargets[key] = combinedTargets[key];
+  // Step 2: Build combinedTargets by iterating through all unique nutrient keys found
+  allNutrientKeysInPlan.forEach(nutrientKey => {
+    let rdaSum = 0;
+    let ulMin = null;
+    let unit = '';
+    let fdc_nutrient_number = null;
+    let nutrientPresentInAtLeastOnePerson = false;
+
+    selectedPeopleObjects.value.forEach(person => {
+      const personDrvs = individualTargets[person.id]; // Use the already populated individual targets
+      if (personDrvs && personDrvs[nutrientKey]) {
+        const drvEntry = personDrvs[nutrientKey];
+        nutrientPresentInAtLeastOnePerson = true;
+
+        if (drvEntry.rda !== null && drvEntry.rda !== undefined) {
+          rdaSum += parseFloat(drvEntry.rda) || 0;
+          hasAnyRdaOrUlOverall = true;
+        }
+        if (drvEntry.ul !== null && drvEntry.ul !== undefined) {
+          const currentUl = parseFloat(drvEntry.ul);
+          if (ulMin === null || currentUl < ulMin) {
+            ulMin = currentUl;
+          }
+          hasAnyRdaOrUlOverall = true;
+        }
+        // Capture unit and FDC number from the first valid entry for this nutrient key
+        if (!unit && drvEntry.unit) unit = drvEntry.unit;
+        if (!fdc_nutrient_number && drvEntry.fdc_nutrient_number) fdc_nutrient_number = drvEntry.fdc_nutrient_number;
+      }
+    });
+
+    if (nutrientPresentInAtLeastOnePerson) { // Only add to combined if at least one person had this nutrient DRV
+      combinedTargets[nutrientKey] = {
+        rda: rdaSum,
+        ul: ulMin,
+        unit: unit,
+        fdc_nutrient_number: fdc_nutrient_number
+      };
     }
-  }
-  
-  // If no people, or no one has DRVs, combined targets will be empty or all zeros.
-  // If no RDAs/ULs at all, hasAnyRdaOrUl remains false.
-  // The structure expects `combined_plan_targets` and `individual_person_targets`.
-  return {
-    combined_plan_targets: (selectedPeopleObjects.value.length > 0 && hasAnyRdaOrUl) ? finalCombinedTargets : {},
+  });
+  console.log('[MealPlanForm] Constructed combinedTargets:', JSON.parse(JSON.stringify(combinedTargets)));
+
+  // Step 3: Finalize combined_plan_targets - already filtered by nutrientPresentInAtLeastOnePerson
+  // If no people are selected, or no DRVs were found at all, combinedTargets will be empty.
+  const finalCombinedTargets = (selectedPeopleObjects.value.length > 0 && hasAnyRdaOrUlOverall) ? combinedTargets : {};
+
+  const targetsResult = {
+    combined_plan_targets: finalCombinedTargets,
     individual_person_targets: individualTargets,
     _debug_selected_people_count: selectedPeopleObjects.value.length,
-    _debug_has_any_rda_ul_overall: hasAnyRdaOrUl
+    _debug_has_any_rda_ul_overall: hasAnyRdaOrUlOverall
   };
+  console.log('[MealPlanForm] derivedPlanTargets CALCULATION RESULT:', JSON.parse(JSON.stringify(targetsResult)));
+  return targetsResult;
 });
 
 const livePlanNutritionalBreakdown = computed(() => {

@@ -1,7 +1,7 @@
 .PHONY: tests all-containers all-docker web frontend db logs logs-web logs-frontend logs-db backup help import-fdc import-custom-drvs food-editor test-frontend
 
 tests:
-	PYTHONPATH=src python -m pytest $(ARGS)
+	PYTHONPATH=src pytest $(ARGS)
 	@echo "Running frontend unit tests..."
 	$(MAKE) test-frontend
 

@@ -71,8 +71,8 @@ class PersonProfileSerializer(serializers.ModelSerializer):
         fields = '__all__' # This will now include 'personalized_drvs' due to the method field
 
     def get_personalized_drvs(self, obj):
-        if hasattr(obj, 'get_personalized_drvs'):
-            return obj.get_personalized_drvs()
+        if hasattr(obj, 'get_complete_drvs'):
+            return obj.get_complete_drvs()
         return {}
 
 class IngredientUsageSerializer(serializers.ModelSerializer):
