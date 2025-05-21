@@ -105,6 +105,7 @@ class IngredientUsageSerializer(serializers.ModelSerializer):
                 'nutrient_name': nutrient.name,
                 'nutrient_unit': nutrient.unit,
                 'fdc_nutrient_number': nutrient.fdc_nutrient_number,
+                'fdc_id': nutrient.fdc_nutrient_id,
                 'scaled_amount': scaled_amount,
                 'default_rda': nutrient.get_default_rda(), # Get from Nutrient model
                 'upper_limit': nutrient.get_upper_limit()  # Get from Nutrient model

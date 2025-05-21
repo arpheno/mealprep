@@ -6,6 +6,7 @@ import { getGuessedFdcNumber } from './FdcNumberGuesser.js';
  * @property {string} nutrient_unit
  * @property {number} scaled_amount
  * @property {string|null} [fdc_nutrient_number]
+ * @property {number|null} [fdc_id]
  */
 
 /**
@@ -17,6 +18,7 @@ import { getGuessedFdcNumber } from './FdcNumberGuesser.js';
  * @property {string} nutrientKey
  * @property {number} originalAmount
  * @property {string} originalUnit
+ * @property {number|null} fdcIdForData
  */
 
 /**
@@ -65,6 +67,8 @@ class NutritionalCalculator {
       fdcNumForData = getGuessedFdcNumber(pureNutrientName, this.nutrientConstants, this.logger);
     }
 
+    const fdcIdForData = contribution.fdc_id || null;
+
     const standardizedAmount = originalAmount;
     const standardizedUnit = originalUnit;
 
@@ -85,6 +89,7 @@ class NutritionalCalculator {
       nutrientKey,
       originalAmount,
       originalUnit,
+      fdcIdForData,
     };
     this.logger('[NutritionalCalculator] processNutrientContribution - output:', JSON.parse(JSON.stringify(result)));
     return result;

@@ -33,6 +33,14 @@ import { SankeyChart } from 'echarts/charts';
 import { TooltipComponent, TitleComponent, LegendComponent } from 'echarts/components';
 import VChart, { THEME_KEY } from 'vue-echarts';
 import { provide } from 'vue';
+import NutritionalCalculator from '../utils/NutritionalCalculator/NutritionalCalculator.js';
+import {
+    KJ_TO_KCAL_CONVERSION_FACTOR,
+    FDC_NUM_ENERGY,
+    FDC_NUM_PROTEIN,
+    FDC_NUM_FAT,
+    FDC_NUM_CARB
+} from '../utils/nutritionConstants.js';
 
 use([
   CanvasRenderer,
@@ -75,6 +83,19 @@ const loading = ref(false);
 const processedSources = ref([]);
 const sankeyChartKey = ref(0); // Key for forcing re-render
 
+// Instantiate the calculator
+const nutrientConstantsForCalculator = {
+  KJ_TO_KCAL_CONVERSION_FACTOR,
+  FDC_NUM_ENERGY,
+  FDC_NUM_PROTEIN,
+  FDC_NUM_FAT,
+  FDC_NUM_CARB
+};
+const nutritionalCalculator = new NutritionalCalculator({
+  nutrientConstants: nutrientConstantsForCalculator,
+  logger: console.log // Or a more sophisticated logger
+});
+
 const personName = (personId) => {
   const person = props.selectedPeople.find(p => p.id === personId);
   return person ? person.name : 'Selected User';
@@ -100,9 +121,10 @@ watch(() => [props.nutrientDetail, props.planItemsData, props.activeView], (newV
   }
   loading.value = true;
   const sources = [];
-  const targetFdcNumber = props.nutrientDetail.fdc_nutrient_number;
+  const targetFdcId = props.nutrientDetail.fdc_id;
+
   // nutrientDetail.key is "Nutrient Name (Unit)", nutrientDetail.unit is "Unit"
-  const targetNutrientName = props.nutrientDetail.key.replace(` (${props.nutrientDetail.unit})`, '').toLowerCase();
+  const targetNutrientNameFromKey = props.nutrientDetail.key.replace(` (${props.nutrientDetail.unit})`, '').toLowerCase();
 
   // Calculate total amount for percentage calculation, considering the active view
   let totalAmountForContext = props.nutrientDetail.total;
@@ -137,12 +159,53 @@ watch(() => [props.nutrientDetail, props.planItemsData, props.activeView], (newV
     component.ingredientusage_set.forEach(usage => {
       if (!usage.scaled_nutrient_contributions) return;
       
-      usage.scaled_nutrient_contributions.forEach(contribution => {
-        const matchesFdc = targetFdcNumber && contribution.fdc_nutrient_number === targetFdcNumber;
-        const matchesName = !targetFdcNumber && contribution.nutrient_name.toLowerCase() === targetNutrientName && contribution.nutrient_unit === props.nutrientDetail.unit;
+      usage.scaled_nutrient_contributions.forEach(rawContribution => {
+        // Use NutritionalCalculator to process the contribution
+        const processedContribution = nutritionalCalculator.processNutrientContribution(rawContribution);
+        const { 
+          pureNutrientName, 
+          unitForDisplay, 
+          amountToStore, // This is the value after any unit conversion (e.g., kJ to kcal, or potential future mg to µg if calculator handled it)
+          fdcIdForData // THIS IS THE KEY FOR MATCHING
+        } = processedContribution;
+
+        // Match against the processed data
+        // const matchesFdcNumber = targetFdcNumber && fdcNumForData && fdcNumForData.toString() === targetFdcNumber.toString();
         
-        if (matchesFdc || matchesName) {
-          let amount = contribution.scaled_amount * frequencyMultiplier; // Amount from this ingredient for one serving of component, scaled by freq
+        // Fallback to name/unit match if FDC ID doesn't match or isn't the primary comparison basis
+        const matchesNameAndUnit = pureNutrientName.toLowerCase() === targetNutrientNameFromKey && 
+                                 unitForDisplay === props.nutrientDetail.unit;
+        
+        // Refined matching logic: Prioritize FDC ID
+        let finalMatch = false;
+        if (targetFdcId !== null && targetFdcId !== undefined) {
+            finalMatch = fdcIdForData !== null && fdcIdForData !== undefined && fdcIdForData.toString() === targetFdcId.toString();
+        console.log('[SankeyModal] Match check:', {
+            targetFdcId,
+            fdcIdForData,
+            matchesNameAndUnit,
+            finalMatch,
+            pureNutrientName,
+            unitForDisplay,
+            targetNutrientNameFromKey,
+            nutrientUnit: props.nutrientDetail.unit
+        });
+        } else {
+            // If no targetFdcId on the nutrient being drilled down (should be rare now),
+            // fall back to name + unit matching.
+            finalMatch = matchesNameAndUnit;
+        console.log('[SankeyModal] Fallback match check:', {
+            targetNutrientNameFromKey,
+            pureNutrientName,
+            unitForDisplay,
+            nutrientUnit: props.nutrientDetail.unit,
+            matchesNameAndUnit
+        });
+        }
+
+        if (finalMatch) {
+          // Use amountToStore from the processed contribution
+          let amount = amountToStore * frequencyMultiplier;
 
           if (props.activeView !== 'overall') {
             amount /= numPeopleSharingComponent; // Divide by people sharing if per-person view
@@ -151,7 +214,7 @@ watch(() => [props.nutrientDetail, props.planItemsData, props.activeView], (newV
           if (amount > 0.001) { // Only add if contribution is somewhat significant
             sources.push({
               componentName: component.name,
-              ingredientName: usage.ingredient_name,
+              ingredientName: usage.ingredient_name, // Use original ingredient_name for display
               amount: amount,
               percentage: totalAmountForContext > 0 ? (amount / totalAmountForContext) * 100 : 0,
             });

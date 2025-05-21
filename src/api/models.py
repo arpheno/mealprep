@@ -332,33 +332,6 @@ class PersonProfile(models.Model):
         then applies any custom overrides.
         DRV types are prioritized: PRI (as RDA), then AI (as RDA if PRI not present), then UL.
         """
-        if self.age is None or self.gender is None:
-            # If age or gender is not set, we can't reliably determine DRVs.
-            # Return custom targets only, or empty if none.
-            # Or, could try to fetch "generic" DRVs not specific to age/gender.
-            # For now, returning custom targets or empty.
-            # Frontend expects nutrientKey: {rda, ul, unit, fdc_nutrient_number}
-            
-            # Process custom_nutrient_targets to fit the expected structure
-            processed_custom_targets = {}
-            if isinstance(self.custom_nutrient_targets, dict):
-                for name, data in self.custom_nutrient_targets.items():
-                    # Attempt to find the nutrient to get its canonical unit and FDC number
-                    nutrient_obj = Nutrient.objects.filter_by_name_or_alias(name).first()
-                    unit = data.get("unit", nutrient_obj.unit if nutrient_obj else None)
-                    fdc_num = nutrient_obj.fdc_nutrient_number if nutrient_obj else None
-                    nutrient_key = f"{name} ({unit})" if unit else name
-
-                    processed_custom_targets[nutrient_key] = {
-                        "rda": data.get("target"), # Assuming "target" is RDA
-                        "ul": None, # Custom targets usually specify RDA/target, not UL
-                        "ai": None, # And not AI
-                        "unit": unit,
-                        "fdc_nutrient_number": fdc_num,
-                        "source": "custom_override"
-                    }
-            return processed_custom_targets
-
         complete_drvs = {}
         
         # Filter DRVs:
@@ -390,6 +363,7 @@ class PersonProfile(models.Model):
                     "rda": None, "ul": None, "ai": None, # Initialize
                     "unit": nutrient.unit,
                     "fdc_nutrient_number": nutrient.fdc_nutrient_number,
+                    "fdc_id": nutrient.fdc_nutrient_id,
                     "source": "base_drv"
                 }
 
@@ -420,17 +394,18 @@ class PersonProfile(models.Model):
                 # Determine unit: 1. From data, 2. From nutrient_obj, 3. Fallback to None
                 final_unit = unit_from_data if unit_from_data else (nutrient_obj.unit if nutrient_obj else None)
                 
-                # If unit is still None, we can't form the key correctly, or it might lead to issues.
-                # Log this or handle as an error. For now, we'll use the name as key if unit is None.
                 nutrient_key = f"{name} ({final_unit})" if final_unit else name
                 
+                # Get FDC ID and Number from nutrient_obj if available
                 fdc_num = nutrient_obj.fdc_nutrient_number if nutrient_obj else None
+                fdc_id_val = nutrient_obj.fdc_nutrient_id if nutrient_obj else None
 
                 if nutrient_key not in complete_drvs:
                     complete_drvs[nutrient_key] = {
                         "rda": None, "ul": None, "ai": None, 
                         "unit": final_unit, 
                         "fdc_nutrient_number": fdc_num,
+                        "fdc_id": fdc_id_val,
                         "source": "custom_override"
                     }
                 
@@ -439,8 +414,11 @@ class PersonProfile(models.Model):
                     complete_drvs[nutrient_key]["rda"] = data["target"]
                     complete_drvs[nutrient_key]["unit"] = final_unit # Ensure unit from override is used
                     complete_drvs[nutrient_key]["source"] = "custom_override"
-                    if nutrient_obj and not complete_drvs[nutrient_key]["fdc_nutrient_number"]:
-                        complete_drvs[nutrient_key]["fdc_nutrient_number"] = nutrient_obj.fdc_nutrient_number
+                    if nutrient_obj:
+                        if not complete_drvs[nutrient_key]["fdc_nutrient_number"]:
+                            complete_drvs[nutrient_key]["fdc_nutrient_number"] = nutrient_obj.fdc_nutrient_number
+                        if not complete_drvs[nutrient_key]["fdc_id"]: # Ensure FDC ID is populated if from override
+                            complete_drvs[nutrient_key]["fdc_id"] = nutrient_obj.fdc_nutrient_id
                 
                 # Custom targets might also specify UL or AI, though less common for "target" field
                 # if "ul" in data: complete_drvs[nutrient_key]["ul"] = data["ul"]
