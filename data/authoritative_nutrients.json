@@ -1,0 +1,385 @@
+[
+  {
+    "name": "Energy",
+    "unit": "kcal",
+    "fdc_nutrient_id": 1008,
+    "aliases": ["Calories", "Calories (kcal)", "Energy (kcal)", "Energy"],
+    "category": "ENERGY",
+    "is_essential": true,
+    "description": "The energy provided by food, typically measured in kilocalories.",
+    "source_notes": "Primary energy value. Corresponds to FDC Nutrient ID 1008 (Energy) and FDC Nutrient Number 208."
+  },
+  {
+    "name": "Protein",
+    "unit": "g",
+    "fdc_nutrient_id": 1003,
+    "aliases": ["Total Protein", "Protein", "Protein (g)", "Proteins"],
+    "category": "MACRO",
+    "is_essential": true,
+    "description": "Macronutrient essential for building muscle mass and other bodily functions. Corresponds to FDC Nutrient ID 1003 (Protein) and FDC Nutrient Number 203.",
+    "source_notes": ""
+  },
+  {
+    "name": "Carbohydrate",
+    "unit": "g",
+    "fdc_nutrient_id": 1005,
+    "aliases": ["Carbs", "Total Carbohydrates", "Carbohydrate, by difference", "Carbohydrate (g)"],
+    "category": "MACRO",
+    "is_essential": false,
+    "description": "Macronutrient that is the body's main source of energy. Corresponds to FDC Nutrient ID 1005 (Carbohydrate, by difference) and FDC Nutrient Number 205.",
+    "source_notes": ""
+  },
+  {
+    "name": "Fat",
+    "unit": "g",
+    "fdc_nutrient_id": 1004,
+    "aliases": ["Fat", "Total Fat", "Fat (g)", "Total Lipid (Fat)"],
+    "category": "MACRO",
+    "is_essential": true,
+    "description": "Macronutrient essential for energy storage, insulation, and absorption of fat-soluble vitamins. Corresponds to FDC Nutrient ID 1004 (Total lipid (fat)) and FDC Nutrient Number 204.",
+    "source_notes": ""
+  },
+  {
+    "name": "Sugar",
+    "unit": "g",
+    "fdc_nutrient_id": 2000,
+    "aliases": ["Total Sugars", "Sugars", "Sugars (g)", "Total Sugars", "Sugars, total including NLEA", "Sugars, total","Sugar"],
+    "category": "MACRO",
+    "is_essential": false,
+    "description": "Total sugars including those naturally present and added. NLEA: Nutrition Labeling and Education Act. Corresponds to FDC Nutrient ID 2000 (Sugars, total including NLEA).",
+    "source_notes": "This is often the value used for 'Total Sugars' on nutrition labels."
+  },
+  {
+    "name": "Fiber",
+    "unit": "g",
+    "fdc_nutrient_id": 1079,
+    "aliases": ["Dietary Fiber", "Fiber", "Fiber (g)", "Fiber, total dietary"],
+    "category": "MACRO",
+    "is_essential": false,
+    "description": "Indigestible part of plant foods that aids in digestion and has various health benefits. Corresponds to FDC Nutrient ID 1079 (Fiber, total dietary) and FDC Nutrient Number 291.",
+    "source_notes": ""
+  },
+  {
+    "name": "Calcium",
+    "unit": "mg",
+    "fdc_nutrient_id": 1087,
+    "aliases": ["Calcium", "Calcium (mg)", "Calcium, Ca"],
+    "category": "MINERAL",
+    "is_essential": true,
+    "description": "Mineral essential for bone health, muscle function, and nerve transmission. Corresponds to FDC Nutrient ID 1087 (Calcium, Ca) and FDC Nutrient Number 301.",
+    "source_notes": ""
+  },
+  {
+    "name": "Sodium",
+    "unit": "mg",
+    "fdc_nutrient_id": 1093,
+    "aliases": ["Sodium, Na", "Sodium (mg)", "Sodium"],
+    "category": "MINERAL",
+    "is_essential": true,
+    "description": "Mineral essential for fluid balance and nerve function. Corresponds to FDC Nutrient ID 1093 (Sodium, Na) and FDC Nutrient Number 307.",
+    "source_notes": ""
+  },
+  {
+    "name": "Potassium",
+    "unit": "mg",
+    "fdc_nutrient_id": 1092,
+    "aliases": ["Potassium", "Potassium (mg)", "Potassium, K"],
+    "category": "MINERAL",
+    "is_essential": true,
+    "description": "Mineral important for heart function, nerve signaling, and muscle contraction. Corresponds to FDC Nutrient ID 1092 (Potassium, K) and FDC Nutrient Number 306.",
+    "source_notes": ""
+  },
+  {
+    "name": "Magnesium",
+    "unit": "mg",
+    "fdc_nutrient_id": 1090,
+    "aliases": ["Magnesium", "Magnesium (mg)", "Magnesium, Mg"],
+    "category": "MINERAL",
+    "is_essential": true,
+    "description": "Mineral involved in over 300 enzymatic reactions, including energy production and muscle function. Corresponds to FDC Nutrient ID 1090 (Magnesium, Mg) and FDC Nutrient Number 304.",
+    "source_notes": ""
+  },
+  {
+    "name": "Phosphorus",
+    "unit": "mg",
+    "fdc_nutrient_id": 1091,
+    "aliases": ["Phosphorus", "Phosphorus (mg)", "Phosphorus, P"],
+    "category": "MINERAL",
+    "is_essential": true,
+    "description": "Mineral critical for bone structure, cell membrane integrity, and energy metabolism. Corresponds to FDC Nutrient ID 1091 (Phosphorus, P) and FDC Nutrient Number 305.",
+    "source_notes": ""
+  },
+  {
+    "name": "Sulfur",
+    "unit": "mg",
+    "fdc_nutrient_id": 1094,
+    "aliases": ["Sulfur", "Sulfur (mg)", "Sulfur, S"],
+    "category": "MINERAL",
+    "is_essential": true,
+    "description": "Mineral component of essential amino acids and antioxidants. Often not tracked directly due to estimation via protein intake. Corresponds to FDC Nutrient ID 1094 (Sulfur, S).",
+    "source_notes": ""
+  },
+  {
+    "name": "Zinc",
+    "unit": "mg",
+    "fdc_nutrient_id": 1095,
+    "aliases": ["Zinc", "Zinc (mg)", "Zinc, Zn"],
+    "category": "TRACE",
+    "is_essential": true,
+    "description": "Trace mineral essential for immune function, wound healing, DNA synthesis, and enzyme activity. Corresponds to FDC Nutrient ID 1095 (Zinc, Zn) and FDC Nutrient Number 309.",
+    "source_notes": ""
+  },
+  {
+    "name": "Iodine",
+    "unit": "µg",
+    "fdc_nutrient_id": 1100,
+    "aliases": ["Iodine", "Iodine (µg)", "Iodine, I"],
+    "category": "TRACE",
+    "is_essential": true,
+    "description": "Trace element critical for the production of thyroid hormones, which regulate metabolism and growth. Corresponds to FDC Nutrient ID 1100 (Iodine, I) and FDC Nutrient Number 312.",
+    "source_notes": ""
+  },
+  {
+    "name": "Selenium",
+    "unit": "µg",
+    "fdc_nutrient_id": 1103,
+    "aliases": ["Selenium", "Selenium (µg)", "Selenium, Se"],
+    "category": "TRACE",
+    "is_essential": true,
+    "description": "Trace mineral with antioxidant properties and roles in thyroid function and immune defense. Corresponds to FDC Nutrient ID 1103 (Selenium, Se) and FDC Nutrient Number 317.",
+    "source_notes": ""
+  },
+  {
+    "name": "Copper",
+    "unit": "mg",
+    "fdc_nutrient_id": 1098,
+    "aliases": ["Copper", "Copper (mg)", "Copper, Cu"],
+    "category": "TRACE",
+    "is_essential": true,
+    "description": "Trace mineral involved in iron metabolism, connective tissue formation, and neurotransmitter synthesis. Corresponds to FDC Nutrient ID 1098 (Copper, Cu) and FDC Nutrient Number 312.",
+    "source_notes": ""
+  },  
+  
+  {
+    "name": "Iron",
+    "unit": "mg",
+    "fdc_nutrient_id": 1089,
+    "aliases": ["Iron", "Iron, Fe", "Iron (mg)","Iron, Fe (mg)"],
+    "category": "MINERAL",
+    "is_essential": true,
+    "description": "Mineral essential for oxygen transport in the blood. Corresponds to FDC Nutrient ID 1089 (Iron, Fe) and FDC Nutrient Number 303.",
+    "source_notes": ""
+  },
+  {
+    "name": "Vitamin A",
+    "unit": "µg",
+    "fdc_nutrient_id": 1106,
+    "aliases": ["Vitamin A, RAE", "Retinol Activity Equivalents", "Vitamin A, RAE (µg)", "Vitamin A"],
+    "category": "VITAMIN",
+    "is_essential": true,
+    "description": "Fat-soluble vitamin important for vision, immune function, and cell growth. Measured in Retinol Activity Equivalents. Corresponds to FDC Nutrient ID 1106 (Vitamin A, RAE) and FDC Nutrient Number 320.",
+    "source_notes": "RAE is the preferred unit for Vitamin A activity."
+  },
+  
+  {
+    "name": "Vitamin B1",
+    "unit": "mg",
+    "fdc_nutrient_id": 1165,
+    "aliases": [
+      "Thiamin",
+      "Thiamine",
+      "Vitamin B1",
+      "Vitamin B-1",
+      "Vitamin B1 (mg)",
+      "Thiamin (mg)"
+    ],
+    "category": "VITAMIN",
+    "is_essential": true,
+    "description": "B-vitamin critical for energy metabolism and proper nerve and muscle function. Corresponds to FDC Nutrient ID 1165 (Thiamin) and FDC Nutrient Number 404.",
+    "source_notes": ""
+  },
+  {
+    "name": "Vitamin B2",
+    "unit": "mg",
+    "fdc_nutrient_id": 1166,
+    "aliases": [
+      "Riboflavin",
+      "Vitamin B2",
+      "Vitamin B-2",
+      "Vitamin B2 (mg)",
+      "Riboflavin (mg)"
+    ],
+    "category": "VITAMIN",
+    "is_essential": true,
+    "description": "B-vitamin that supports cellular energy production and the metabolism of fats, drugs, and steroids. Corresponds to FDC Nutrient ID 1166 (Riboflavin) and FDC Nutrient Number 405.",
+    "source_notes": ""
+  },
+  {
+    "name": "Vitamin B3",
+    "unit": "mg",
+    "fdc_nutrient_id": 1167,
+    "aliases": [
+      "Niacin",
+      "Niacin, NE",
+      "Nicotinic Acid",
+      "Nicotinamide",
+      "Vitamin B3",
+      "Vitamin B-3",
+      "Vitamin B3 (mg)",
+      "Niacin (mg)"
+    ],
+    "category": "VITAMIN",
+    "is_essential": true,
+    "description": "B-vitamin essential for energy metabolism, DNA repair, and cell signaling. Corresponds to FDC Nutrient ID 1167 (Niacin) and FDC Nutrient Number 406.",
+    "source_notes": ""
+  },
+  {
+    "name": "Vitamin B5",
+    "unit": "mg",
+    "fdc_nutrient_id": 1170,
+    "aliases": [
+      "Pantothenic Acid",
+      "D-Pantothenic Acid",
+      "Pantothenate",
+      "Vitamin B5",
+      "Vitamin B-5",
+      "Pantothenic Acid (mg)",
+      "Vitamin B5 (mg)"
+    ],
+    "category": "VITAMIN",
+    "is_essential": true,
+    "description": "B-vitamin vital for the synthesis of coenzyme A and for the metabolism of proteins, fats, and carbohydrates. Corresponds to FDC Nutrient ID 1170 (Pantothenic acid) and FDC Nutrient Number 410.",
+    "source_notes": ""
+  },
+  {
+    "name": "Vitamin B6",
+    "unit": "mg",
+    "fdc_nutrient_id": 1175,
+    "aliases": [
+      "Pyridoxine",
+      "Pyridoxal",
+      "Pyridoxamine",
+      "Vitamin B6",
+      "Vitamin B-6",
+      "Pyridoxine (mg)",
+      "Vitamin B6 (mg)"
+    ],
+    "category": "VITAMIN",
+    "is_essential": true,
+    "description": "B-vitamin involved in amino-acid metabolism, neurotransmitter synthesis, and hemoglobin formation. Corresponds to FDC Nutrient ID 1175 (Vitamin B-6) and FDC Nutrient Number 415.",
+    "source_notes": ""
+  },
+  {
+    "name": "Vitamin B7",
+    "unit": "µg",
+    "fdc_nutrient_id": 1176,
+    "aliases": [
+      "Biotin",
+      "Vitamin H",
+      "Vitamin B7",
+      "Vitamin B-7",
+      "Biotin (µg)",
+      "Vitamin B7 (µg)"
+    ],
+    "category": "VITAMIN",
+    "is_essential": true,
+    "description": "B-vitamin important for macronutrient metabolism, gene regulation, and healthy hair, skin, and nails. Corresponds to FDC Nutrient ID 1176 (Biotin) and FDC Nutrient Number 417.",
+    "source_notes": ""
+  },
+  {
+    "name": "Vitamin B9",
+    "unit": "µg",
+    "fdc_nutrient_id": 1190,
+    "aliases": ["Folic Acid, DFE", "Folate, DFE", "Folate (µg)","Vitamin B9","Vitamin B-9","Vitamin B9 (µg)","Folate"],
+    "category": "VITAMIN",
+    "is_essential": true,
+    "description": "B-vitamin important for cell growth and metabolism. DFE: Dietary Folate Equivalents. Corresponds to FDC Nutrient ID 1190 (Folate, DFE) and FDC Nutrient Number 435.",
+    "source_notes": "DFE accounts for differences in bioavailability between food folate and folic acid."
+  },
+  {
+    "name": "Vitamin B12",
+    "unit": "µg",
+    "fdc_nutrient_id": 1178,
+    "aliases": [
+      "Vitamin B12",
+      "Vitamin B-12",
+      "Cobalamin",
+      "Cyanocobalamin",
+      "Hydroxocobalamin",
+      "Methylcobalamin",
+      "Vitamin B12 (µg)",
+      "Cobalamin (µg)"
+    ],
+    "category": "VITAMIN",
+    "is_essential": true,
+    "description": "B-vitamin required for red-blood-cell formation, neurological function, and DNA synthesis. Corresponds to FDC Nutrient ID 1178 (Vitamin B-12) and FDC Nutrient Number 418.",
+    "source_notes": ""
+  },
+  {
+    "name": "Vitamin D",
+    "unit": "µg",
+    "fdc_nutrient_id": 1114,
+    "aliases": ["Vitamin D (D2 + D3)", "Calciferol", "Vitamin D (µg)", "Vitamin D, D2 + D3","Vitamin D"],
+    "category": "VITAMIN",
+    "is_essential": true,
+    "description": "Fat-soluble vitamin essential for calcium absorption and bone health. Includes D2 (ergocalciferol) and D3 (cholecalciferol). Corresponds to FDC Nutrient ID 1114 (Vitamin D (D2 + D3)) and FDC Nutrient Number 328.",
+    "source_notes": "Often also expressed in IU (International Units), where 1 µg = 40 IU."
+  },
+  {
+    "name": "Vitamin E",
+    "unit": "mg",
+    "fdc_nutrient_id": 1109,
+    "aliases": [
+      "Vitamin E",
+      "Alpha-Tocopherol",
+      "α-Tocopherol",
+      "Tocopherol",
+      "Vitamin E (mg)"
+    ],
+    "category": "VITAMIN",
+    "is_essential": true,
+    "description": "Fat-soluble antioxidant vitamin that protects cell membranes from oxidative damage. Corresponds to FDC Nutrient ID 1109 (Vitamin E) and FDC Nutrient Number 323.",
+    "source_notes": ""
+  },
+  {
+    "name": "Vitamin K",
+    "unit": "µg",
+    "fdc_nutrient_id": 1185,
+    "aliases": [
+      "Vitamin K",
+      "Phylloquinone",
+      "Naphthoquinone",
+      "Vitamin K1",
+      "Vitamin K2",
+      "Menaquinone",
+      "MK-4",
+      "MK-7",
+      "Vitamin K (µg)",
+      "Phylloquinone (µg)"
+    ],
+    "category": "VITAMIN",
+    "is_essential": true,
+    "description": "Fat-soluble vitamin essential for the synthesis of blood-clotting factors and bone proteins. Corresponds to FDC Nutrient ID 1185 (Vitamin K) and FDC Nutrient Number 430.",
+    "source_notes": ""
+  },
+  {
+    "name": "Cholesterol",
+    "unit": "mg",
+    "fdc_nutrient_id": 1253,
+    "aliases": ["Cholesterol (mg)", "Cholesterol"],
+    "category": "GENERAL",
+    "is_essential": false,
+    "description": "A type of lipid found in animal cells; high levels in blood are a risk factor for heart disease. Corresponds to FDC Nutrient ID 1253 (Cholesterol) and FDC Nutrient Number 601.",
+    "source_notes": ""
+  },
+  {
+    "name": "Choline",
+    "unit": "mg",
+    "fdc_nutrient_id": 1180,
+    "aliases": ["Choline, total", "Choline (mg)", "Choline"],
+    "category": "GENERAL",
+    "is_essential": true,
+    "description": "Essential nutrient important for liver function, brain development, nerve function. Corresponds to FDC Nutrient ID 1180 (Choline, total) and FDC Nutrient Number 421.",
+    "source_notes": ""
+  }
+] 

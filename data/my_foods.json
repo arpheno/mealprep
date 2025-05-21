@@ -421,7 +421,7 @@
       {
         "nutrient": {
           "id": 1100,
-          "number": "304",
+          "number": "314",
           "name": "Iodine, I",
           "rank": 5500,
           "unitName": "\u00b5g"
@@ -5550,7 +5550,7 @@
     { "nutrient": { "id": 1098, "number": "312", "name": "Copper, Cu", "unitName": "mg" }, "amount": 0.07 },
     { "nutrient": { "id": 1101, "number": "315", "name": "Manganese, Mn", "unitName": "mg" }, "amount": 0.03 },
     { "nutrient": { "id": 1103, "number": "317", "name": "Selenium, Se", "unitName": "µg" }, "amount": 28.0 },
-    { "nutrient": { "id": 1100, "number": "304", "name": "Iodine, I", "unitName": "µg" }, "amount": 25.0 },
+    { "nutrient": { "id": 1100, "number": "314", "name": "Iodine, I", "unitName": "µg" }, "amount": 25.0 },
 
     { "nutrient": { "id": 1106, "number": "320", "name": "Vitamin A, RAE", "unitName": "µg" }, "amount": 180.0 },
     { "nutrient": { "id": 1107, "number": "321", "name": "Carotene, beta", "unitName": "µg" }, "amount": 50.0 },
@@ -5592,7 +5592,7 @@
   },
   "foodNutrients": [
     {
-      "nutrient": { "id": 1100, "number": "304", "name": "Iodine, I", "unitName": "µg" },
+      "nutrient": { "id": 1100, "number": "314", "name": "Iodine, I", "unitName": "µg" },
       "amount": 100.0
     }
   ],
