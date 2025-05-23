@@ -27,6 +27,7 @@ class NutrientViewSet(viewsets.ModelViewSet):
     queryset = Nutrient.objects.all().order_by('name')
     serializer_class = NutrientSerializer
     permission_classes = [permissions.AllowAny]  # Allow any access for testing
+    pagination_class = None  # Disable pagination to return all nutrients
 
 class IngredientViewSet(viewsets.ModelViewSet):
     """API endpoint that allows ingredients to be viewed or edited."""

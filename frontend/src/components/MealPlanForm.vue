@@ -115,6 +115,7 @@ const planData = ref({
 
 const allMealComponents = ref([]);
 const allPersonProfiles = ref([]);
+const allNutrients = ref([]);
 
 const addedMealComponents = ref([]);
 const isSaving = ref(false);
@@ -137,8 +138,13 @@ onMounted(async () => {
     allPersonProfiles.value = profilesResponse.data.results || profilesResponse.data;
     console.log('Fetched all person profiles:', allPersonProfiles.value);
 
+    // Fetch all nutrients
+    const nutrientsResponse = await axios.get(`${API_BASE_URL}/nutrients/`);
+    allNutrients.value = nutrientsResponse.data.results || nutrientsResponse.data;
+    console.log('Fetched all nutrients:', allNutrients.value);
+
   } catch (err) {
-    console.error('Error fetching initial data (components or profiles):', err);
+    console.error('Error fetching initial data (components, profiles, or nutrients):', err);
     const errorMessage = 'Failed to load initial data. ' + (err.response?.data?.detail || err.message);
     error.value = errorMessage; // Set general form error
     mealComponentsError.value = 'Failed to load meal components.'; // Specific error for component search section
@@ -372,36 +378,88 @@ const derivedPlanTargets = computed(() => {
 const livePlanNutritionalBreakdown = computed(() => {
   console.log('[MealPlanForm] Initializing livePlanNutritionalBreakdown. Selected People:', JSON.parse(JSON.stringify(selectedPeopleObjects.value)), 'Added Components:', JSON.parse(JSON.stringify(addedMealComponents.value)));
 
+  // Map category values to desired group names in the desired order
+  const categoryToGroupMap = {
+    'ENERGY': 'Energy',
+    'MACRO': 'Macros', 
+    'VITAMIN': 'Vitamins',
+    'MINERAL': 'Minerals',
+    'TRACE': 'Traces',
+    'GENERAL': 'Other'
+  };
+  
+  const groupOrder = ['Energy', 'Macros', 'Vitamins', 'Minerals', 'Traces', 'Other'];
+
   const result = {
-    overallSummary: {
-      'Energy': {},
-      'Macronutrients': {},
-      'Minerals': {},
-      'Vitamins': {},
-      'General & Other': {},
-      'NoReferenceValues': {}
-    },
+    overallSummary: {},
     perPersonBreakdown: {}
   };
 
-  result.perPersonBreakdown = {}; // Ensure it's initialized cleanly
+  // Initialize all groups in the desired order
+  groupOrder.forEach(groupName => {
+    result.overallSummary[groupName] = {};
+  });
+
+  // Initialize per-person breakdown
   selectedPeopleObjects.value.forEach(person => {
     console.log(`[MealPlanForm] Initializing structure for person: ${person.name} (ID: ${person.id})`);
     result.perPersonBreakdown[person.id] = {
       personName: person.name,
       total_energy_kcal_for_person: 0,
-      nutrientGroups: {
-        'Energy': {},
-        'Macronutrients': {},
-        'Minerals': {},
-        'Vitamins': {},
-        'General & Other': {},
-        'NoReferenceValues': {}
-      }
+      nutrientGroups: {}
     };
+    groupOrder.forEach(groupName => {
+      result.perPersonBreakdown[person.id].nutrientGroups[groupName] = {};
+    });
   });
-  console.log('[MealPlanForm] Initialized perPersonBreakdown structure:', JSON.parse(JSON.stringify(result.perPersonBreakdown)));
 
+  // Get combined targets for overall summary  
+  const overallPlanCombinedTargetData = derivedPlanTargets.value.combined_plan_targets || {};
+  const individualTargetsData = derivedPlanTargets.value.individual_person_targets || {};
+
+  // Initialize ALL nutrients from the API, even if they have 0 contribution
+  allNutrients.value.forEach(nutrient => {
+    const nutrientKey = `${nutrient.name} (${nutrient.unit})`;
+    const groupName = categoryToGroupMap[nutrient.category] || 'Other';
+    
+    // Get targets for this nutrient
+    const overallTarget = overallPlanCombinedTargetData[nutrientKey] || 
+                         overallPlanCombinedTargetData[nutrient.name] ||
+                         overallPlanCombinedTargetData[`${nutrient.name} (${nutrient.unit})`];
+    
+    // Initialize in overall summary
+    result.overallSummary[groupName][nutrientKey] = {
+      total: 0,
+      unit: nutrient.unit,
+      rda: overallTarget?.rda || nutrient.default_rda,
+      ul: overallTarget?.ul || nutrient.upper_limit,
+      fdc_nutrient_number: nutrient.fdc_nutrient_id,
+      fdc_id: nutrient.fdc_nutrient_id,
+      kcal_contribution: 0,
+      percent_energy: null
+    };
+
+    // Initialize for each person
+    selectedPeopleObjects.value.forEach(person => {
+      const personTargets = individualTargetsData[person.id] || {};
+      const personTarget = personTargets[nutrientKey] || 
+                          personTargets[nutrient.name] ||
+                          personTargets[`${nutrient.name} (${nutrient.unit})`];
+
+      result.perPersonBreakdown[person.id].nutrientGroups[groupName][nutrientKey] = {
+        total: 0,
+        unit: nutrient.unit,
+        rda: personTarget?.rda || nutrient.default_rda,
+        ul: personTarget?.ul || nutrient.upper_limit,
+        fdc_nutrient_number: nutrient.fdc_nutrient_id,
+        fdc_id: nutrient.fdc_nutrient_id,
+        kcal_contribution: 0,
+        percent_energy: null
+      };
+    });
+  });
+
+  // Now add contributions from meal plan components
   addedMealComponents.value.forEach((itemInPlan, itemIndex) => {
     console.log(`[MealPlanForm] Processing added component #${itemIndex}: ${itemInPlan.component.name}, Assigned to: ${JSON.stringify(itemInPlan.assigned_people_ids)}`);
     const component = itemInPlan.component;
@@ -440,7 +498,6 @@ const livePlanNutritionalBreakdown = computed(() => {
         const processedContribution = nutritionalCalculator.processNutrientContribution(rawContribution);
         const { 
           pureNutrientName, 
-          unitForDisplay, 
           amountToStore: baseAmountToStore, 
           fdcNumForData, 
           fdcIdForData,
@@ -451,132 +508,56 @@ const livePlanNutritionalBreakdown = computed(() => {
         let nutrientAmountFromItemScaledByFreq = baseAmountToStore * consumption_multiplier_per_person;
         let amountToStoreForSummary = nutrientAmountFromItemScaledByFreq; // This will be used for accumulation
         
-        // The energy unit standardization is now handled by the calculator.
-        // The fdcNumForData is also primarily determined by the calculator.
-        // The nutrientKey (e.g. "Protein (g)") is also generated by the calculator and should be used for storage.
-
-        // --- Overall Summary Calculation ---        
-        const overallPlanCombinedTargetData = derivedPlanTargets.value.combined_plan_targets || {};
-        // Try to get target using the standardized nutrientKey first, then fallback to pureName or pureName+unit
-        const overallPlanCombinedTarget = overallPlanCombinedTargetData[nutrientKey] || 
-                                          overallPlanCombinedTargetData[pureNutrientName] || 
-                                          overallPlanCombinedTargetData[`${pureNutrientName} (${unitForDisplay})`];
+        // Find the group for this nutrient
+        const nutrientFromAPI = allNutrients.value.find(n => 
+          n.name === pureNutrientName || 
+          n.fdc_nutrient_id === fdcIdForData ||
+          `${n.name} (${n.unit})` === nutrientKey
+        );
         
-        const overallRdaFromPlanTarget = overallPlanCombinedTarget?.rda;
-        const overallUlFromPlanTarget = overallPlanCombinedTarget?.ul;
-        const fdcIdForOverallSummary = rawContribution.fdc_id || (overallPlanCombinedTarget || {}).fdc_id || fdcIdForData;
-        const fdcNumForOverallGrouping = fdcNumForData || (overallPlanCombinedTarget || {}).fdc_nutrient_number;
+        const groupName = nutrientFromAPI ? 
+          (categoryToGroupMap[nutrientFromAPI.category] || 'Other') : 
+          getHardcodedNutrientGroup(pureNutrientName, fdcNumForData);
 
-        let determinedOverallCategoryGroup = getHardcodedNutrientGroup(pureNutrientName, fdcNumForOverallGrouping);
-        const hasOverallReference = (overallRdaFromPlanTarget !== null && overallRdaFromPlanTarget !== undefined) ||
-                                  (overallUlFromPlanTarget !== null && overallUlFromPlanTarget !== undefined);
+        // Add to overall summary
+        if (result.overallSummary[groupName] && result.overallSummary[groupName][nutrientKey]) {
+          result.overallSummary[groupName][nutrientKey].total += amountToStoreForSummary;
 
-        if (!hasOverallReference && determinedOverallCategoryGroup !== 'Energy' && determinedOverallCategoryGroup !== 'Macronutrients') {
-          determinedOverallCategoryGroup = 'NoReferenceValues';
-        }
-        
-        if (!result.overallSummary[determinedOverallCategoryGroup]) result.overallSummary[determinedOverallCategoryGroup] = {};
-        // USE THE STANDARDIZED nutrientKey for storage
-        if (!result.overallSummary[determinedOverallCategoryGroup][nutrientKey]) {
-          result.overallSummary[determinedOverallCategoryGroup][nutrientKey] = {
-            total: 0, unit: unitForDisplay,
-            rda: overallRdaFromPlanTarget,
-            ul: overallUlFromPlanTarget,
-            fdc_nutrient_number: fdcNumForOverallGrouping, 
-            fdc_id: fdcIdForOverallSummary, 
-            kcal_contribution: 0,
-            percent_energy: null
-          };
-        }
-        result.overallSummary[determinedOverallCategoryGroup][nutrientKey].total += amountToStoreForSummary;
-
-        if (MACRO_FDC_NUMBERS.includes(fdcNumForOverallGrouping) && fdcNumForOverallGrouping !== FDC_NUM_ENERGY) {
-          let kcalPerGram = 0;
-          if (fdcNumForOverallGrouping === FDC_NUM_CARB) kcalPerGram = KCAL_PER_GRAM_CARB;
-          else if (fdcNumForOverallGrouping === FDC_NUM_PROTEIN) kcalPerGram = KCAL_PER_GRAM_PROTEIN;
-          else if (fdcNumForOverallGrouping === FDC_NUM_FAT) kcalPerGram = KCAL_PER_GRAM_FAT;
-          result.overallSummary[determinedOverallCategoryGroup][nutrientKey].kcal_contribution += amountToStoreForSummary * kcalPerGram;
+          // Calculate kcal contribution for macros
+          if (MACRO_FDC_NUMBERS.includes(fdcNumForData) && fdcNumForData !== FDC_NUM_ENERGY) {
+            let kcalPerGram = 0;
+            if (fdcNumForData === FDC_NUM_CARB) kcalPerGram = KCAL_PER_GRAM_CARB;
+            else if (fdcNumForData === FDC_NUM_PROTEIN) kcalPerGram = KCAL_PER_GRAM_PROTEIN;
+            else if (fdcNumForData === FDC_NUM_FAT) kcalPerGram = KCAL_PER_GRAM_FAT;
+            result.overallSummary[groupName][nutrientKey].kcal_contribution += amountToStoreForSummary * kcalPerGram;
+          }
         }
 
-        // --- Per-Person Breakdown Calculation ---        
+        // Add to per-person breakdown
         selectedPeopleObjects.value.forEach((person) => {
           if (itemInPlan.assigned_people_ids.includes(person.id)) {
             const numPeopleSharingThisItem = itemInPlan.assigned_people_ids.length;
             let amountForThisPerson = 0;
             if (numPeopleSharingThisItem > 0) {
               amountForThisPerson = amountToStoreForSummary / numPeopleSharingThisItem; 
-            } else {
-              amountForThisPerson = 0;
             }
             
-            let unitForPersonDisplay = unitForDisplay; 
-            
-            if (fdcNumForOverallGrouping === FDC_NUM_ENERGY) { 
+            if (fdcNumForData === FDC_NUM_ENERGY) { 
                result.perPersonBreakdown[person.id].total_energy_kcal_for_person += amountForThisPerson;
             }
             
-            const individualTargetsForThisPerson = derivedPlanTargets.value.individual_person_targets?.[person.id] || {};
-            let personSpecificDRV = null;
-            if (Object.keys(individualTargetsForThisPerson).length > 0) {
-                  personSpecificDRV = individualTargetsForThisPerson[nutrientKey];
-                  if (!personSpecificDRV){
-                    console.error('[MealPlanForm] Error finding personSpecificDRV:', nutrientKey);
-                    return; // Don't try the others if this fails
-                }
-                individualTargetsForThisPerson[pureNutrientName] || 
-                individualTargetsForThisPerson[`${pureNutrientName} (${unitForDisplay})`];
-                if (!personSpecificDRV && fdcIdForOverallSummary) { 
-                    const fdcIdNutrientKey = Object.keys(individualTargetsForThisPerson).find(k => individualTargetsForThisPerson[k]?.fdc_id === fdcIdForOverallSummary);
-                    if (fdcIdNutrientKey) personSpecificDRV = individualTargetsForThisPerson[fdcIdNutrientKey];
-                }
-            }
-            
-            let personDailyRda = personSpecificDRV ? personSpecificDRV.rda : null;
-            let personDailyUl = personSpecificDRV ? personSpecificDRV.ul : null;
-            let personFdcNumToUse = personSpecificDRV?.fdc_nutrient_number || fdcNumForOverallGrouping;
-            let personFdcIdToUse = personSpecificDRV?.fdc_id || fdcIdForOverallSummary; 
-            let personUnitForDRV = personSpecificDRV?.unit || unitForPersonDisplay;
-
-            if (personFdcNumToUse === FDC_NUM_ENERGY && personUnitForDRV.toLowerCase() === 'kj') {
-                if (personDailyRda !== null) personDailyRda *= KJ_TO_KCAL_CONVERSION_FACTOR;
-                if (personDailyUl !== null) personDailyUl *= KJ_TO_KCAL_CONVERSION_FACTOR;
-            }
-            
-            const personRdaForPlanDuration = personDailyRda; 
-            const personUlForPlanDuration = personDailyUl;
-
-            let determinedPersonCategoryGroup = getHardcodedNutrientGroup(pureNutrientName, personFdcNumToUse);
-            const hasPersonReference = (personRdaForPlanDuration !== null && personRdaForPlanDuration !== undefined) || 
-                                     (personUlForPlanDuration !== null && personUlForPlanDuration !== undefined);
-
-            if (!hasPersonReference && determinedPersonCategoryGroup !== 'Energy' && determinedPersonCategoryGroup !== 'Macronutrients') {
-              determinedPersonCategoryGroup = 'NoReferenceValues';
-            }
-            
-            // USE THE STANDARDIZED nutrientKey for storage in per-person breakdown
-            const personNutrientKeyForStorage = nutrientKey; 
-
-            if (!result.perPersonBreakdown[person.id].nutrientGroups[determinedPersonCategoryGroup]) {
-               result.perPersonBreakdown[person.id].nutrientGroups[determinedPersonCategoryGroup] = {};
-            }
-            if (!result.perPersonBreakdown[person.id].nutrientGroups[determinedPersonCategoryGroup][personNutrientKeyForStorage]) {
-              result.perPersonBreakdown[person.id].nutrientGroups[determinedPersonCategoryGroup][personNutrientKeyForStorage] = {
-                total: 0, unit: unitForPersonDisplay,
-                rda: personRdaForPlanDuration,
-                ul: personUlForPlanDuration,
-                fdc_nutrient_number: personFdcNumToUse,
-                fdc_id: personFdcIdToUse, 
-                kcal_contribution: 0, percent_energy: null
-              };
-            }
-            result.perPersonBreakdown[person.id].nutrientGroups[determinedPersonCategoryGroup][personNutrientKeyForStorage].total += amountForThisPerson;
-            
-            if (MACRO_FDC_NUMBERS.includes(personFdcNumToUse) && personFdcNumToUse !== FDC_NUM_ENERGY) {
-              let kcalPerGram = 0;
-              if (personFdcNumToUse === FDC_NUM_CARB) kcalPerGram = KCAL_PER_GRAM_CARB;
-              else if (personFdcNumToUse === FDC_NUM_PROTEIN) kcalPerGram = KCAL_PER_GRAM_PROTEIN;
-              else if (personFdcNumToUse === FDC_NUM_FAT) kcalPerGram = KCAL_PER_GRAM_FAT;
-              result.perPersonBreakdown[person.id].nutrientGroups[determinedPersonCategoryGroup][personNutrientKeyForStorage].kcal_contribution += amountForThisPerson * kcalPerGram;
+            if (result.perPersonBreakdown[person.id].nutrientGroups[groupName] && 
+                result.perPersonBreakdown[person.id].nutrientGroups[groupName][nutrientKey]) {
+              result.perPersonBreakdown[person.id].nutrientGroups[groupName][nutrientKey].total += amountForThisPerson;
+              
+              // Calculate kcal contribution for macros
+              if (MACRO_FDC_NUMBERS.includes(fdcNumForData) && fdcNumForData !== FDC_NUM_ENERGY) {
+                let kcalPerGram = 0;
+                if (fdcNumForData === FDC_NUM_CARB) kcalPerGram = KCAL_PER_GRAM_CARB;
+                else if (fdcNumForData === FDC_NUM_PROTEIN) kcalPerGram = KCAL_PER_GRAM_PROTEIN;
+                else if (fdcNumForData === FDC_NUM_FAT) kcalPerGram = KCAL_PER_GRAM_FAT;
+                result.perPersonBreakdown[person.id].nutrientGroups[groupName][nutrientKey].kcal_contribution += amountForThisPerson * kcalPerGram;
+              }
             }
           }
         }); // End of selectedPeopleObjects.forEach for per-person
@@ -585,18 +566,18 @@ const livePlanNutritionalBreakdown = computed(() => {
   }); // End of addedMealComponents.value.forEach
 
   // Calculate %E for overall Macronutrients
-  if (result.overallSummary['Macronutrients']) {
+  if (result.overallSummary['Macros']) {
     let totalOverallMacroEnergyContribution = 0;
-    for (const nutrientKey in result.overallSummary['Macronutrients']) {
-      const macroData = result.overallSummary['Macronutrients'][nutrientKey];
+    for (const nutrientKey in result.overallSummary['Macros']) {
+      const macroData = result.overallSummary['Macros'][nutrientKey];
       if (MACRO_FDC_NUMBERS.includes(macroData.fdc_nutrient_number) && macroData.kcal_contribution > 0) {
         totalOverallMacroEnergyContribution += macroData.kcal_contribution;
       }
     }
 
     if (totalOverallMacroEnergyContribution > 0) {
-      for (const nutrientKey in result.overallSummary['Macronutrients']) {
-        const macroData = result.overallSummary['Macronutrients'][nutrientKey];
+      for (const nutrientKey in result.overallSummary['Macros']) {
+        const macroData = result.overallSummary['Macros'][nutrientKey];
         if (MACRO_FDC_NUMBERS.includes(macroData.fdc_nutrient_number) && macroData.kcal_contribution > 0) {
           macroData.percent_energy = (macroData.kcal_contribution / totalOverallMacroEnergyContribution) * 100;
         }
@@ -607,18 +588,18 @@ const livePlanNutritionalBreakdown = computed(() => {
   // Calculate %E for per-person Macronutrients
   selectedPeopleObjects.value.forEach(person => {
     const personData = result.perPersonBreakdown[person.id];
-    if (personData.nutrientGroups['Macronutrients']) {
+    if (personData.nutrientGroups['Macros']) {
       let totalPersonMacroEnergyContribution = 0;
-      for (const nutrientKey in personData.nutrientGroups['Macronutrients']) {
-        const macroData = personData.nutrientGroups['Macronutrients'][nutrientKey];
+      for (const nutrientKey in personData.nutrientGroups['Macros']) {
+        const macroData = personData.nutrientGroups['Macros'][nutrientKey];
         if (MACRO_FDC_NUMBERS.includes(macroData.fdc_nutrient_number) && macroData.kcal_contribution > 0) {
           totalPersonMacroEnergyContribution += macroData.kcal_contribution;
         }
       }
 
       if (totalPersonMacroEnergyContribution > 0) {
-        for (const nutrientKey in personData.nutrientGroups['Macronutrients']) {
-          const macroData = personData.nutrientGroups['Macronutrients'][nutrientKey];
+        for (const nutrientKey in personData.nutrientGroups['Macros']) {
+          const macroData = personData.nutrientGroups['Macros'][nutrientKey];
           if (MACRO_FDC_NUMBERS.includes(macroData.fdc_nutrient_number) && macroData.kcal_contribution > 0) {
             macroData.percent_energy = (macroData.kcal_contribution / totalPersonMacroEnergyContribution) * 100;
           }
@@ -627,43 +608,24 @@ const livePlanNutritionalBreakdown = computed(() => {
     }
   });
 
-  // DEBUG: Log per-person breakdown before cleanup
-  console.log('[MealPlanForm] Per-Person Breakdown (Before Cleanup):', JSON.parse(JSON.stringify(result.perPersonBreakdown)));
-
-  // Clean up totals and remove empty groups
-  ['overallSummary', 'perPersonBreakdown'].forEach(summaryType => {
-    const summaryObject = summaryType === 'overallSummary' ? result.overallSummary : null;
-    const processGroups = (groupsObject) => {
-        for (const groupName in groupsObject) {
-            let groupHasNutrients = false;
-            if (groupName === 'NoReferenceValues' && Object.keys(groupsObject[groupName]).length === 0) {
-                delete groupsObject[groupName]; // Remove NoReferenceValues if empty
-                return;
-            }
-            for (const nutrientKey in groupsObject[groupName]) {
-                groupsObject[groupName][nutrientKey].total = parseFloat(groupsObject[groupName][nutrientKey].total.toFixed(2));
-                // Keep group if it has nutrients, or if it's NoReferenceValues and has entries.
-                if (groupsObject[groupName][nutrientKey].total > 0 || 
-                    (groupsObject[groupName][nutrientKey].rda !== null && groupsObject[groupName][nutrientKey].rda !== undefined) || 
-                    (groupName === 'NoReferenceValues' && Object.keys(groupsObject[groupName]).length > 0)) {
-                    groupHasNutrients = true;
-                }
-            }
-            if (!groupHasNutrients && groupName !== 'NoReferenceValues') { // Don't delete NoReferenceValues here if it was initially populated
-                delete groupsObject[groupName];
-            } else if (!groupHasNutrients && groupName === 'NoReferenceValues' && Object.keys(groupsObject[groupName]).length === 0) {
-                 delete groupsObject[groupName]; // Ensure empty NoReferenceValues is removed
-            }
-        }
-    };
-
-    if (summaryObject) {
-        processGroups(summaryObject);
-    } else if (summaryType === 'perPersonBreakdown') {
-        for (const personId in result.perPersonBreakdown) {
-            processGroups(result.perPersonBreakdown[personId].nutrientGroups);
-        }
+  // Round totals for cleaner display
+  groupOrder.forEach(groupName => {
+    if (result.overallSummary[groupName]) {
+      for (const nutrientKey in result.overallSummary[groupName]) {
+        result.overallSummary[groupName][nutrientKey].total = parseFloat(result.overallSummary[groupName][nutrientKey].total.toFixed(2));
+      }
     }
+  });
+
+  selectedPeopleObjects.value.forEach(person => {
+    groupOrder.forEach(groupName => {
+      if (result.perPersonBreakdown[person.id].nutrientGroups[groupName]) {
+        for (const nutrientKey in result.perPersonBreakdown[person.id].nutrientGroups[groupName]) {
+          result.perPersonBreakdown[person.id].nutrientGroups[groupName][nutrientKey].total = 
+            parseFloat(result.perPersonBreakdown[person.id].nutrientGroups[groupName][nutrientKey].total.toFixed(2));
+        }
+      }
+    });
   });
 
   // DEBUG: Log final result of livePlanNutritionalBreakdown

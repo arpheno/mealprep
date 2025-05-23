@@ -61,4 +61,5 @@ DJANGO_SETTINGS_MODULE = "mealprep_project.settings"
 python_files = "tests.py test_*.py *_tests.py"
 
 [tool.setuptools.packages.find]
-where = ["src"] 
+where = ["."]
+include = ["api*", "mealprep_project*"] 

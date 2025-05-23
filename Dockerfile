@@ -13,6 +13,7 @@ RUN pip install --upgrade pip uv
 
 # Copy project definition and necessary source files for the build
 COPY pyproject.toml ./
+RUN uv pip install --system --no-cache .
 COPY README.md ./
 COPY manage.py ./
 COPY src/ ./src/
@@ -24,7 +25,6 @@ COPY src/ ./src/
 # Install dependencies from pyproject.toml using uv
 # The '.' tells uv to look for pyproject.toml in the current directory
 # This will also build our local package mealprep_app
-RUN uv pip install --system --no-cache .
 
 # --- Diagnostic Steps --- (Removing these as pandas is not a direct dependency)
 # RUN echo "--- Listing site-packages in builder stage (root) ---" && ls -l /usr/local/lib/python3.10/site-packages/
