@@ -1,7 +1,7 @@
-.PHONY: tests all-containers all-docker web frontend db logs logs-web logs-frontend logs-db backup help import-fdc import-custom-drvs food-editor test-frontend
+.PHONY: tests all-containers all-docker web frontend db logs logs-web logs-frontend logs-db backup help import-fdc import-custom-drvs import-nutrients food-editor test-frontend
 
 tests:
-	PYTHONPATH=src pytest $(ARGS)
+	PYTHONPATH=src python -m pytest $(ARGS)
 	@echo "Running frontend unit tests..."
 	$(MAKE) test-frontend
 
@@ -143,6 +143,12 @@ import-custom-drvs:
 	docker-compose up -d web
 	@echo "Importing custom DRVs..."
 	docker-compose exec web python manage.py import_custom_drvs $(ARGS)
+
+import-nutrients: ## Import authoritative nutrients from data/authoritative_nutrients.json
+	@echo "Ensuring web service is running..."
+	docker-compose up -d web
+	@echo "Importing authoritative nutrients..."
+	docker-compose exec web python manage.py import_authoritative_nutrients $(ARGS)
 
 # Food Editor target: runs the FastAPI server for the food editor
 food-editor:

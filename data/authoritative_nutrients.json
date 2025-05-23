@@ -14,7 +14,7 @@
     "unit": "g",
     "fdc_nutrient_id": 1003,
     "aliases": ["Total Protein", "Protein", "Protein (g)", "Proteins"],
-    "category": "MACRO",
+    "category": "MACRONUTRIENT",
     "is_essential": true,
     "description": "Macronutrient essential for building muscle mass and other bodily functions. Corresponds to FDC Nutrient ID 1003 (Protein) and FDC Nutrient Number 203.",
     "source_notes": ""
@@ -24,7 +24,7 @@
     "unit": "g",
     "fdc_nutrient_id": 1005,
     "aliases": ["Carbs", "Total Carbohydrates", "Carbohydrate, by difference", "Carbohydrate (g)"],
-    "category": "MACRO",
+    "category": "MACRONUTRIENT",
     "is_essential": false,
     "description": "Macronutrient that is the body's main source of energy. Corresponds to FDC Nutrient ID 1005 (Carbohydrate, by difference) and FDC Nutrient Number 205.",
     "source_notes": ""
@@ -34,7 +34,7 @@
     "unit": "g",
     "fdc_nutrient_id": 1004,
     "aliases": ["Fat", "Total Fat", "Fat (g)", "Total Lipid (Fat)"],
-    "category": "MACRO",
+    "category": "MACRONUTRIENT",
     "is_essential": true,
     "description": "Macronutrient essential for energy storage, insulation, and absorption of fat-soluble vitamins. Corresponds to FDC Nutrient ID 1004 (Total lipid (fat)) and FDC Nutrient Number 204.",
     "source_notes": ""
@@ -43,8 +43,8 @@
     "name": "Sugar",
     "unit": "g",
     "fdc_nutrient_id": 2000,
-    "aliases": ["Total Sugars", "Sugars", "Sugars (g)", "Total Sugars", "Sugars, total including NLEA", "Sugars, total","Sugar"],
-    "category": "MACRO",
+    "aliases": ["Total Sugars", "Sugars", "Sugars (g)", "Total", "Sugars, total including NLEA", "Sugars, Total","Sugar"],
+    "category": "MACRONUTRIENT",
     "is_essential": false,
     "description": "Total sugars including those naturally present and added. NLEA: Nutrition Labeling and Education Act. Corresponds to FDC Nutrient ID 2000 (Sugars, total including NLEA).",
     "source_notes": "This is often the value used for 'Total Sugars' on nutrition labels."
@@ -54,7 +54,7 @@
     "unit": "g",
     "fdc_nutrient_id": 1079,
     "aliases": ["Dietary Fiber", "Fiber", "Fiber (g)", "Fiber, total dietary"],
-    "category": "MACRO",
+    "category": "MACRONUTRIENT",
     "is_essential": false,
     "description": "Indigestible part of plant foods that aids in digestion and has various health benefits. Corresponds to FDC Nutrient ID 1079 (Fiber, total dietary) and FDC Nutrient Number 291.",
     "source_notes": ""
@@ -170,6 +170,47 @@
     "description": "Mineral essential for oxygen transport in the blood. Corresponds to FDC Nutrient ID 1089 (Iron, Fe) and FDC Nutrient Number 303.",
     "source_notes": ""
   },
+  {
+    "name": "Manganese",
+    "unit": "mg",
+    "fdc_nutrient_id": 1101,
+    "aliases": ["Manganese", "Manganese (mg)", "Manganese, Mn"],
+    "category": "TRACE",
+    "is_essential": true,
+    "description": "Trace mineral involved in enzyme function, bone formation, and antioxidant defense. Corresponds to FDC Nutrient ID 1101 (Manganese, Mn) and FDC Nutrient Number 315.",
+    "source_notes": ""
+  },
+  {
+    "name": "Chromium",
+    "unit": "µg",
+    "fdc_nutrient_id": 1096,
+    "aliases": ["Chromium", "Chromium (µg)", "Chromium, Cr"],
+    "category": "TRACE",
+    "is_essential": true,
+    "description": "Trace mineral that supports insulin function and glucose metabolism. Corresponds to FDC Nutrient ID 1096 (Chromium, Cr) and FDC Nutrient Number 314.",
+    "source_notes": ""
+  },
+  {
+    "name": "Molybdenum",
+    "unit": "µg",
+    "fdc_nutrient_id": 1102,
+    "aliases": ["Molybdenum", "Molybdenum (µg)", "Molybdenum, Mo"],
+    "category": "TRACE",
+    "is_essential": true,
+    "description": "Trace mineral necessary for enzyme function, particularly those involved in sulfur and purine metabolism. Corresponds to FDC Nutrient ID 1102 (Molybdenum, Mo) and FDC Nutrient Number 316.",
+    "source_notes": ""
+  },
+  {
+    "name": "Cobalt",
+    "unit": "µg",
+    "fdc_nutrient_id": 1097,
+    "aliases": ["Cobalt", "Cobalt (µg)", "Cobalt, Co"],
+    "category": "TRACE",
+    "is_essential": true,
+    "description": "Trace element that functions as a component of vitamin B12, essential for red blood cell production and neurological health. Corresponds to FDC Nutrient ID 1097 (Cobalt, Co).",
+    "source_notes": "Typically not tracked independently in dietary guidelines, but essential as part of cobalamin (Vitamin B12)."
+  },
+
   {
     "name": "Vitamin A",
     "unit": "µg",
@@ -316,6 +357,23 @@
     "source_notes": ""
   },
   {
+    "name": "Vitamin C",
+    "unit": "mg",
+    "fdc_nutrient_id": 1162,
+    "aliases": [
+      "Vitamin C",
+      "Ascorbic Acid",
+      "L-Ascorbic Acid",
+      "Ascorbate",
+      "Vitamin C (mg)",
+      "Vitamin C, total ascorbic acid"
+    ],
+    "category": "VITAMIN",
+    "is_essential": true,
+    "description": "Water-soluble antioxidant vitamin required for collagen synthesis, immune function and enhanced iron absorption. Corresponds to FDC Nutrient ID 1162 (Vitamin C, total ascorbic acid) and FDC Nutrient Number 401.",
+    "source_notes": ""
+  },  
+  {
     "name": "Vitamin D",
     "unit": "µg",
     "fdc_nutrient_id": 1114,
@@ -381,5 +439,52 @@
     "is_essential": true,
     "description": "Essential nutrient important for liver function, brain development, nerve function. Corresponds to FDC Nutrient ID 1180 (Choline, total) and FDC Nutrient Number 421.",
     "source_notes": ""
+  },
+  {
+    "name": "Alpha-Linolenic Acid (ALA)",
+    "unit": "g",
+    "fdc_nutrient_id": 1404,
+    "aliases": [
+      "ALA",
+      "α-Linolenic Acid",
+      "PUFA 18:3 n-3 c,c,c",
+      "Omega-3 (ALA)",
+      "18:3 n-3"
+    ],
+    "category": "GENERAL",
+    "is_essential": true,
+    "description": "Essential omega-3 poly-unsaturated fatty acid that must be obtained from the diet; precursor to EPA and DHA. Corresponds to FDC Nutrient ID 1404 and Nutrient Number 851.",
+    "source_notes": ""
+  },
+  {
+    "name": "Eicosapentaenoic Acid (EPA)",
+    "unit": "g",
+    "fdc_nutrient_id": 1278,
+    "aliases": [
+      "EPA",
+      "PUFA 20:5 n-3",
+      "Omega-3 (EPA)",
+      "20:5 n-3"
+    ],
+    "category": "GENERAL",
+    "is_essential": true,
+    "description": "Long-chain omega-3 fatty acid found mainly in marine foods; supports cardiovascular and anti-inflammatory functions. Corresponds to FDC Nutrient ID 1278 and Nutrient Number 629.",
+    "source_notes": ""
+  },
+  {
+    "name": "Docosahexaenoic Acid (DHA)",
+    "unit": "g",
+    "fdc_nutrient_id": 1272,
+    "aliases": [
+      "DHA",
+      "PUFA 22:6 n-3",
+      "Omega-3 (DHA)",
+      "22:6 n-3"
+    ],
+    "category": "GENERAL",
+    "is_essential": true,
+    "description": "Long-chain omega-3 fatty acid critical for brain, eye and heart health; abundant in fatty fish. Corresponds to FDC Nutrient ID 1272 and Nutrient Number 621.",
+    "source_notes": ""
   }
+  
 ] 

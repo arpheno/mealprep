@@ -163,6 +163,31 @@ def find_nutrient(nutrient_name_csv, processed_db_nutrients_cache):
 
     return None
 
+def find_nutrient(nutrient_name_csv: str) -> Nutrient | None:
+    """
+    Finds a Nutrient by its canonical name or any of its aliases using a case-insensitive match.
+    Leverages Nutrient.objects.get_by_name_or_alias().
+
+    Args:
+        nutrient_name_csv (str): The nutrient name as it appears in the CSV.
+
+    Returns:
+        Nutrient | None: The matched Nutrient object or None if not found.
+    """
+    if not nutrient_name_csv or not nutrient_name_csv.strip():
+        return None
+    
+    try:
+        # The manager method already handles case-insensitivity and searching aliases.
+        return Nutrient.objects.get_by_name_or_alias(nutrient_name_csv.strip())
+    except Nutrient.DoesNotExist:
+        return None
+    except Nutrient.MultipleObjectsReturned:
+        # This case should be rare if names/aliases are well-managed.
+        # Log this, as it indicates a data integrity issue or ambiguous CSV name.
+        print(f"Warning: Multiple database nutrients found for CSV name '{nutrient_name_csv}'. Skipping this name.")
+        return None
+
 class Command(BaseCommand):
     help = "Imports Dietary Reference Values (DRVs) from data/drv.csv into the DietaryReferenceValue model."
 
@@ -206,10 +231,12 @@ class Command(BaseCommand):
         created_count = 0
         updated_count = 0
         skipped_count = 0
-        not_found_nutrient_count = 0
+        not_found_nutrient_count = 0 # Counts unique CSV names not found
         error_count = 0
         
-        processed_nutrients_log = set()
+        # Log for unique CSV nutrient names and their DB match status
+        # Stores: {csv_name: Nutrient_object or None (if not found) or 'MULTIPLE' (if ambiguous)}
+        csv_nutrient_mapping_log = {} 
 
 
         try:
@@ -227,26 +254,48 @@ class Command(BaseCommand):
                     return
 
                 for row_num, row in enumerate(reader, start=2): # start=2 for 1-based header + 1-based data
+                    nutrient_obj_for_row = None # To store the nutrient object for the current row
                     try:
-                        csv_nutrient_name = row['Nutrient'].strip()
-                        if not csv_nutrient_name:
+                        raw_csv_nutrient_name = row.get('Nutrient') 
+                        if not raw_csv_nutrient_name or not raw_csv_nutrient_name.strip():
                             self.stdout.write(self.style.WARNING(f"Skipping row {row_num}: Nutrient name is blank."))
                             skipped_count += 1
                             continue
+                        
+                        csv_nutrient_name = raw_csv_nutrient_name.strip()
 
-                        # The find_nutrient now returns a dict like {'id': ..., 'obj': NutrientObject, ...} or None
-                        matched_nutrient_info = find_nutrient(csv_nutrient_name, processed_db_nutrients_cache)
+                        if csv_nutrient_name not in csv_nutrient_mapping_log:
+                            # First time seeing this CSV nutrient name, try to find it in DB
+                            try:
+                                matched_nutrient = Nutrient.objects.get_by_name_or_alias(csv_nutrient_name)
+                                csv_nutrient_mapping_log[csv_nutrient_name] = matched_nutrient
+                                if matched_nutrient:
+                                    self.stdout.write(self.style.SUCCESS(f"CSV Nutrient Mapping: '{csv_nutrient_name}' matched to DB Nutrient: '{matched_nutrient.name}' (ID: {matched_nutrient.id}, Unit: {matched_nutrient.unit})"))
+                                else: # Should not happen if get_by_name_or_alias raises DoesNotExist
+                                    self.stdout.write(self.style.WARNING(f"CSV Nutrient Mapping: '{csv_nutrient_name}' NOT FOUND in DB."))
+                                    csv_nutrient_mapping_log[csv_nutrient_name] = None # Explicitly mark as not found
+                            except Nutrient.DoesNotExist:
+                                self.stdout.write(self.style.WARNING(f"CSV Nutrient Mapping: '{csv_nutrient_name}' NOT FOUND in DB."))
+                                csv_nutrient_mapping_log[csv_nutrient_name] = None
+                            except Nutrient.MultipleObjectsReturned:
+                                self.stdout.write(self.style.ERROR(f"CSV Nutrient Mapping: '{csv_nutrient_name}' matched MULTIPLE DB Nutrients. This name is ambiguous and will be skipped."))
+                                csv_nutrient_mapping_log[csv_nutrient_name] = 'MULTIPLE' # Special marker
 
-                        if not matched_nutrient_info:
-                            if csv_nutrient_name not in processed_nutrients_log:
-                                self.stdout.write(self.style.WARNING(f"Nutrient '{csv_nutrient_name}' from CSV not found in DB. Skipping associated DRV entries."))
-                                processed_nutrients_log.add(csv_nutrient_name)
-                            not_found_nutrient_count += 1
+                        # Use the mapping for the current row
+                        nutrient_lookup_result = csv_nutrient_mapping_log.get(csv_nutrient_name)
+
+                        if nutrient_lookup_result is None:
+                            # This unique CSV name was confirmed as not found previously
+                            skipped_count +=1
+                            # not_found_nutrient_count is incremented when first discovered via the map
+                            continue 
+                        elif nutrient_lookup_result == 'MULTIPLE':
+                            # This unique CSV name was confirmed as ambiguous previously
                             skipped_count +=1
                             continue
-                        
-                        nutrient_obj = matched_nutrient_info['obj'] # Get the actual Nutrient model instance
-                        
+                        else:
+                            nutrient_obj_for_row = nutrient_lookup_result # This is the Nutrient object
+
                         # Map CSV Gender to model Gender choices
                         csv_gender = row['Gender'].strip()
                         model_gender = None
@@ -262,6 +311,15 @@ class Command(BaseCommand):
                             continue
                         
                         # Prepare data for DietaryReferenceValue model
+                        authoritative_rda_value = None
+                        parsed_pri = parse_float_or_none(row.get('PRI'))
+                        parsed_ai = parse_float_or_none(row.get('AI'))
+
+                        if parsed_pri is not None:
+                            authoritative_rda_value = parsed_pri
+                        elif parsed_ai is not None:
+                            authoritative_rda_value = parsed_ai
+                        
                         drv_data = {
                             'source_data_category': row['Category'].strip(),
                             'target_population': row['Target population'].strip(),
@@ -269,17 +327,16 @@ class Command(BaseCommand):
                             'gender': model_gender,
                             'frequency': row['frequency'].strip(),
                             'value_unit': row['unit'].strip(),
-                            'ai': parse_float_or_none(row.get('AI')),
+                            'ai': parsed_ai, # Keep original AI for lineage
                             'ar': parse_float_or_none(row.get('AR')),
-                            'pri': parse_float_or_none(row.get('PRI')),
+                            'pri': parsed_pri, # Keep original PRI for lineage
                             'ri': parse_float_or_none(row.get('RI')),
                             'ul': parse_float_or_none(row.get('UL')),
+                            'authoritative_rda': authoritative_rda_value, # New field
                         }
 
-                        # Unique key for get_or_create / update_or_create
-                        # Based on DietaryReferenceValue.Meta.unique_together
                         unique_key_fields = {
-                            'nutrient': nutrient_obj,
+                            'nutrient': nutrient_obj_for_row,
                             'target_population': drv_data['target_population'],
                             'age_range_text': drv_data['age_range_text'],
                             'gender': drv_data['gender'],
@@ -288,36 +345,27 @@ class Command(BaseCommand):
                         }
 
                         if dry_run:
-                            # Simulate finding or creating
-                            # Check if it would be an update or create
                             existing_drv = DietaryReferenceValue.objects.filter(**unique_key_fields).first()
                             if existing_drv:
-                                # Check if any values would change
                                 changed = False
-                                for k, v in drv_data.items():
-                                    # Compare with existing_drv attributes. Only check value fields.
-                                    if k in ['ai', 'ar', 'pri', 'ri', 'ul']:
-                                        # Handle cases where existing_drv might have None and v is a float, or vice-versa
-                                        current_val = getattr(existing_drv, k)
-                                        # Basic comparison; float precision might be an issue if values are extremely close but not identical.
-                                        # For DRVs, exact float match should be fine unless they are calculated with high precision elsewhere.
-                                        if current_val != v and not (pd.isna(current_val) and pd.isna(v)):
+                                # Check authoritative_rda and other value fields
+                                value_fields_to_check = ['ai', 'ar', 'pri', 'ri', 'ul', 'authoritative_rda']
+                                for k, v_new in drv_data.items():
+                                    if k in value_fields_to_check:
+                                        v_old = getattr(existing_drv, k)
+                                        if v_old != v_new and not (pd.isna(v_old) and pd.isna(v_new)):
                                             changed = True
                                             break
-                                
                                 if changed and update_existing:
-                                    self.stdout.write(f"[Dry Run] Would update DRV for {nutrient_obj.name} ({drv_data['target_population']}, {drv_data['age_range_text']}, {csv_gender})")
+                                    self.stdout.write(f"[Dry Run] Would update DRV for {nutrient_obj_for_row.name} ({drv_data['target_population']}, {drv_data['age_range_text']}, {csv_gender})")
                                     updated_count += 1
                                 elif existing_drv and not update_existing:
                                     skipped_count +=1
-                                else: # no change or not updating
-                                    pass 
                             else:
-                                self.stdout.write(f"[Dry Run] Would create DRV for {nutrient_obj.name} ({drv_data['target_population']}, {drv_data['age_range_text']}, {csv_gender})")
+                                self.stdout.write(f"[Dry Run] Would create DRV for {nutrient_obj_for_row.name} ({drv_data['target_population']}, {drv_data['age_range_text']}, {csv_gender})")
                                 created_count += 1
-                            continue # End of dry run logic for this row
+                            continue
 
-                        # Actual DB operation
                         drv_instance, created = DietaryReferenceValue.objects.get_or_create(
                             defaults=drv_data,
                             **unique_key_fields
@@ -325,60 +373,62 @@ class Command(BaseCommand):
 
                         if created:
                             created_count += 1
-                            self.stdout.write(self.style.SUCCESS(f"Created DRV for {nutrient_obj.name} ({drv_data['target_population']}, {drv_data['age_range_text']}, {csv_gender})"))
-                        else: # Existing instance found
+                        else: 
                             if update_existing:
-                                # Check if any values need updating
                                 has_changed = False
+                                # Check authoritative_rda and other value fields for update
+                                value_fields_to_update = ['ai', 'ar', 'pri', 'ri', 'ul', 'authoritative_rda']
                                 for field, value in drv_data.items():
-                                     # Only update AI, AR, PRI, RI, UL
-                                    if field in ['ai', 'ar', 'pri', 'ri', 'ul']:
+                                    if field in value_fields_to_update:
                                         current_value = getattr(drv_instance, field)
-                                        # Check for actual change, handling None vs float
                                         if current_value != value and not (pd.isna(current_value) and pd.isna(value)):
                                             setattr(drv_instance, field, value)
                                             has_changed = True
-                                
                                 if has_changed:
                                     drv_instance.save()
                                     updated_count += 1
-                                    self.stdout.write(self.style.SUCCESS(f"Updated DRV for {nutrient_obj.name} ({drv_data['target_population']}, {drv_data['age_range_text']}, {csv_gender})"))
                                 else:
-                                    skipped_count += 1 # No changes needed or not updating
-                            else: # not update_existing and instance exists
+                                    skipped_count += 1 
+                            else: 
                                 skipped_count += 1
-                                self.stdout.write(f"Skipped existing DRV for {nutrient_obj.name} (use --update-existing to update)")
                     
                     except Exception as e:
-                        self.stderr.write(self.style.ERROR(f"Error processing row {row_num} for nutrient '{csv_nutrient_name if 'csv_nutrient_name' in locals() else 'Unknown'}': {e}"))
+                        self.stderr.write(self.style.ERROR(f"Error processing row {row_num} for CSV nutrient '{raw_csv_nutrient_name if 'raw_csv_nutrient_name' in locals() else 'Unknown'}': {e}"))
                         error_count += 1
-                        # Decide if you want to continue or stop on error
-                        # For now, continue processing other rows
         
         except FileNotFoundError:
-            csv_path = get_csv_path()
-            self.stderr.write(self.style.ERROR(f"Error: CSV file not found at {csv_path}"))
+            csv_path_fnf = get_csv_path() # Re-evaluate in case settings changed, though unlikely here
+            self.stderr.write(self.style.ERROR(f"Error: CSV file not found at {csv_path_fnf}"))
             return
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"An unexpected error occurred: {e}"))
+            # Consider logging the full traceback here for debugging
+            import traceback
+            traceback.print_exc()
             return
         
+        # Calculate not_found_nutrient_count from the mapping log
+        actual_not_found_count = sum(1 for val in csv_nutrient_mapping_log.values() if val is None)
+        ambiguous_count = sum(1 for val in csv_nutrient_mapping_log.values() if val == 'MULTIPLE')
+
         if dry_run:
             self.stdout.write(self.style.WARNING("Dry run complete."))
         
         self.stdout.write(self.style.SUCCESS("DRV import process finished."))
         self.stdout.write(f"Successfully created entries: {created_count}")
         self.stdout.write(f"Successfully updated entries: {updated_count}")
-        self.stdout.write(f"Skipped entries (exists, no update flag, blank nutrient, unknown gender, or no change): {skipped_count}")
-        self.stdout.write(f"Nutrients from CSV not found in DB (leading to skipped DRV entries): {not_found_nutrient_count}")
-        self.stdout.write(f"Errors during processing: {error_count}")
+        self.stdout.write(f"Skipped entries (e.g. exists, no update flag, blank nutrient, unknown gender, ambiguous, or no change): {skipped_count}")
+        self.stdout.write(f"Unique CSV nutrient names NOT FOUND in DB: {actual_not_found_count}")
+        if ambiguous_count > 0:
+            self.stdout.write(self.style.WARNING(f"Unique CSV nutrient names that were AMBIGUOUS (matched multiple DB entries): {ambiguous_count}"))
+        self.stdout.write(f"Errors during row processing: {error_count}")
 
-        if not_found_nutrient_count > 0:
-             self.stdout.write(self.style.WARNING("Some nutrients in the CSV could not be matched to the database. Review the warnings above."))
+        if actual_not_found_count > 0 or ambiguous_count > 0:
+             self.stdout.write(self.style.WARNING("Some nutrients in the CSV could not be matched or were ambiguous. Review the 'CSV Nutrient Mapping' messages above."))
         if error_count > 0:
             self.stdout.write(self.style.ERROR("Some rows could not be processed due to errors. Review the messages above."))
 
         if dry_run and (created_count > 0 or updated_count > 0):
             self.stdout.write(self.style.WARNING("To apply these changes, run the command again without --dry-run."))
-        elif not dry_run and (created_count == 0 and updated_count == 0 and error_count == 0 and not_found_nutrient_count == 0):
-             self.stdout.write(self.style.SUCCESS("No new data to import or update based on current settings.")) 
+        elif not dry_run and (created_count == 0 and updated_count == 0 and error_count == 0 and actual_not_found_count == 0 and ambiguous_count == 0):
+             self.stdout.write(self.style.SUCCESS("No new data to import or update based on current settings and CSV content.")) 

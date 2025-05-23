@@ -3,7 +3,8 @@ from django.core.exceptions import ValidationError
 from api.models import (
     Ingredient, MealComponent, MealPlan, PersonProfile,
     IngredientUsage, Nutrient, IngredientNutrientLink,
-    MealComponentFrequency, IngredientFoodCategory, MealPlanItem
+    MealComponentFrequency, IngredientFoodCategory, MealPlanItem,
+    Gender # Added Gender import
 )
 
 @pytest.mark.django_db
@@ -167,11 +168,8 @@ class TestMealPlanModel:
         # Create a person profile
         self.person = PersonProfile.objects.create(
             name="Test Person",
-            age_years=30,
-            gender="MALE",
-            weight_kg=70.0,
-            height_cm=175.0,
-            activity_level="MODERATE"
+            age=30,
+            gender=Gender.MALE.value, # Corrected: Use Gender.MALE.value
         )
         
         # Create some nutrients

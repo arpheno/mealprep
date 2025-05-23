@@ -19,18 +19,12 @@ class MealPlanViewSetTests(APITestCase):
         self.profile1 = PersonProfile.objects.create(
             name="John",
             gender=Gender.MALE,
-            age_years=25,
-            weight_kg=70,
-            height_cm=180,
-            activity_level=1.5
+            age=25, # Changed from age_years, removed weight_kg, height_cm, activity_level
         )
         self.profile2 = PersonProfile.objects.create(
             name="Jane",
             gender=Gender.FEMALE,
-            age_years=30,
-            weight_kg=60,
-            height_cm=165,
-            activity_level=1.3
+            age=30, # Changed from age_years, removed weight_kg, height_cm, activity_level
         )
         
         # Create some nutrients

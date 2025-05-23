@@ -8,16 +8,57 @@ from .models import (
     IngredientUsage, 
     MealPlan,
     DietaryReferenceValue,
-    FoodPortion
+    FoodPortion,
+    NutrientAlias
 )
+
+# Custom Filter for IngredientAdmin
+class NutrientContentFilter(admin.SimpleListFilter):
+    title = 'contains nutrient' # Title for the filter
+    parameter_name = 'nutrient_id' # URL parameter name
+
+    def lookups(self, request, model_admin):
+        """
+        Returns a list of tuples. The first element in each
+        tuple is the coded value for the option that will
+        appear in the URL query. The second element is the
+        human-readable name for the option that will appear
+        in the right sidebar.
+        """
+        nutrients = Nutrient.objects.all().order_by('name')
+        return [(n.id, n.name) for n in nutrients]
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value
+        provided in the query string and retrievable via
+        `self.value()`.
+        """
+        if self.value():
+            # Filter ingredients that have a link to the specified nutrient
+            return queryset.filter(ingredientnutrientlink__nutrient_id=self.value()).distinct()
+        return queryset
 
 # Basic registration for now, can be customized later with ModelAdmin classes
 
+# Inline for NutrientAlias
+class NutrientAliasInline(admin.TabularInline):
+    model = NutrientAlias
+    extra = 1 # Number of empty forms to display for adding new aliases
+    # fields = ('name',) # Optionally specify which fields to show if not all
+    verbose_name = "Alias"
+    verbose_name_plural = "Aliases"
+
 @admin.register(Nutrient)
 class NutrientAdmin(admin.ModelAdmin):
-    list_display = ('name', 'unit', 'category', 'is_essential')
+    list_display = ('name', 'unit', 'category', 'is_essential', 'display_aliases')
     list_filter = ('category', 'is_essential')
-    search_fields = ('name', 'description')
+    search_fields = ('name', 'description', 'aliases__name') # Allow searching by alias name
+    inlines = [NutrientAliasInline] # Add the inline here
+
+    def display_aliases(self, obj):
+        return ", ".join([alias.name for alias in obj.aliases.all()])
+    display_aliases.short_description = 'Aliases'
 
 class IngredientNutrientLinkInline(admin.TabularInline):
     model = IngredientNutrientLink
@@ -27,7 +68,7 @@ class IngredientNutrientLinkInline(admin.TabularInline):
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'base_unit_for_nutrition', 'common_purchase_unit')
-    list_filter = ('category',)
+    list_filter = ('category', NutrientContentFilter)
     search_fields = ('name', 'notes')
     inlines = [IngredientNutrientLinkInline]
 

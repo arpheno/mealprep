@@ -60,15 +60,11 @@ class TestPersonProfileModel:
             pri=90.0,  # PRI
             ul=2000.0  # UL
         )
-        
         # Create a person profile
         self.person = PersonProfile.objects.create(
             name="Test Person",
-            age_years=30,
-            gender=Gender.MALE,
-            weight_kg=75.0,
-            height_cm=180.0,
-            activity_level=ActivityLevel.MODERATE,
+            age=30, # Changed from age_years, removed weight_kg, height_cm, activity_level
+            gender=Gender.MALE.value, # Ensure .value is used for CharField choices
             custom_nutrient_targets={
                 "Protein": {"target": 120, "unit": "g", "is_override": True},
                 "Custom Nutrient": {"target": 50, "unit": "µg", "is_override": True}
@@ -78,11 +74,9 @@ class TestPersonProfileModel:
     def test_person_profile_creation(self):
         """Test basic person profile creation and properties"""
         assert self.person.name == "Test Person"
-        assert self.person.age_years == 30
-        assert self.person.gender == Gender.MALE
-        assert self.person.weight_kg == 75.0
-        assert self.person.height_cm == 180.0
-        assert self.person.activity_level == ActivityLevel.MODERATE
+        assert self.person.age == 30 # Changed from age_years
+        assert self.person.gender == Gender.MALE.value # Ensure .value is used for CharField choices
+        # Removed assertions for weight_kg, height_cm, activity_level
         
         # Test custom nutrient targets
         assert "Protein" in self.person.custom_nutrient_targets
@@ -91,27 +85,30 @@ class TestPersonProfileModel:
     
     def test_get_personalized_drvs(self):
         """Test retrieval of personalized dietary reference values"""
-        drvs = self.person.get_personalized_drvs()
+        drvs = self.person.get_complete_drvs() # Changed to get_complete_drvs
         
         # Check if system nutrients with system DRVs are present
-        assert "Energy" in drvs
-        assert "Protein" in drvs
-        assert "Vitamin C" in drvs
+        # Keys in get_complete_drvs include unit, so adjust assertions
+        assert f"Energy ({self.energy.unit})" in drvs
+        assert f"Protein ({self.protein.unit})" in drvs
+        assert f"Vitamin C ({self.vitamin_c.unit})" in drvs
         
         # Check if custom targets override system values
-        assert drvs["Energy"]["rda"] == 2000.0  # System value
-        assert drvs["Protein"]["rda"] == 120.0  # Custom override
-        assert drvs["Vitamin C"]["rda"] == 90.0  # System value
+        assert drvs[f"Energy ({self.energy.unit})"]["rda"] == 2000.0  # System value
+        assert drvs[f"Protein ({self.protein.unit})"]["rda"] == 120.0  # Custom override
+        assert drvs[f"Vitamin C ({self.vitamin_c.unit})"]["rda"] == 90.0  # System value
         
         # Check upper limits
-        assert drvs["Energy"]["ul"] == 4000.0
-        assert drvs["Protein"]["ul"] is None
-        assert drvs["Vitamin C"]["ul"] == 2000.0
+        assert drvs[f"Energy ({self.energy.unit})"]["ul"] == 4000.0
+        # Protein UL is None in DRV, so it should be None here unless overridden
+        assert drvs[f"Protein ({self.protein.unit})"]["ul"] is None 
+        assert drvs[f"Vitamin C ({self.vitamin_c.unit})"]["ul"] == 2000.0
         
         # Check for custom nutrients not in the system
-        assert "Custom Nutrient" in drvs
-        assert drvs["Custom Nutrient"]["rda"] == 50
-        assert drvs["Custom Nutrient"]["unit"] == "µg"
+        # Custom Nutrient key will be "Custom Nutrient (µg)" due to unit in custom_nutrient_targets
+        assert "Custom Nutrient (µg)" in drvs 
+        assert drvs["Custom Nutrient (µg)"]["rda"] == 50
+        assert drvs["Custom Nutrient (µg)"]["unit"] == "µg"
         
     def test_default_nutrient_targets(self):
         """Test the default nutrient targets when creating a new profile"""

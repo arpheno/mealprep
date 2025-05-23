@@ -518,10 +518,13 @@ const livePlanNutritionalBreakdown = computed(() => {
             const individualTargetsForThisPerson = derivedPlanTargets.value.individual_person_targets?.[person.id] || {};
             let personSpecificDRV = null;
             if (Object.keys(individualTargetsForThisPerson).length > 0) {
-                // Try matching with standardized nutrientKey first
-                personSpecificDRV = individualTargetsForThisPerson[nutrientKey] || 
-                                    individualTargetsForThisPerson[pureNutrientName] || 
-                                    individualTargetsForThisPerson[`${pureNutrientName} (${unitForDisplay})`];
+                  personSpecificDRV = individualTargetsForThisPerson[nutrientKey];
+                  if (!personSpecificDRV){
+                    console.error('[MealPlanForm] Error finding personSpecificDRV:', nutrientKey);
+                    return; // Don't try the others if this fails
+                }
+                individualTargetsForThisPerson[pureNutrientName] || 
+                individualTargetsForThisPerson[`${pureNutrientName} (${unitForDisplay})`];
                 if (!personSpecificDRV && fdcIdForOverallSummary) { 
                     const fdcIdNutrientKey = Object.keys(individualTargetsForThisPerson).find(k => individualTargetsForThisPerson[k]?.fdc_id === fdcIdForOverallSummary);
                     if (fdcIdNutrientKey) personSpecificDRV = individualTargetsForThisPerson[fdcIdNutrientKey];

@@ -7,7 +7,7 @@ class NutrientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Nutrient
-        fields = ['id', 'name', 'unit', 'category', 'fdc_nutrient_id', 'fdc_nutrient_number', 
+        fields = ['id', 'name', 'unit', 'category', 'fdc_nutrient_id', 
                   'description', 'is_essential', 'source_notes', 
                   'default_rda', 'upper_limit'] # Added new RDA fields
 
@@ -21,7 +21,6 @@ class IngredientNutrientLinkSerializer(serializers.ModelSerializer):
     # To show nutrient name instead of ID in Ingredient detail
     nutrient_name = serializers.CharField(source='nutrient.name', read_only=True)
     nutrient_unit = serializers.CharField(source='nutrient.unit', read_only=True)
-    fdc_nutrient_number = serializers.CharField(source='nutrient.fdc_nutrient_number', read_only=True)
     # Add back default RDA and UL, sourced from the Nutrient model's methods
     default_rda = serializers.SerializerMethodField()
     upper_limit = serializers.SerializerMethodField()
@@ -33,7 +32,7 @@ class IngredientNutrientLinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = IngredientNutrientLink
         fields = [
-            'id', 'ingredient', 'nutrient', 'nutrient_name', 'nutrient_unit', 'fdc_nutrient_number', 
+            'id', 'ingredient', 'nutrient', 'nutrient_name', 'nutrient_unit', 
             'amount_per_100_units', 
             'default_rda', 'upper_limit' 
         ]
@@ -104,7 +103,6 @@ class IngredientUsageSerializer(serializers.ModelSerializer):
                 'nutrient_id': nutrient.id,
                 'nutrient_name': nutrient.name,
                 'nutrient_unit': nutrient.unit,
-                'fdc_nutrient_number': nutrient.fdc_nutrient_number,
                 'fdc_id': nutrient.fdc_nutrient_id,
                 'scaled_amount': scaled_amount,
                 'default_rda': nutrient.get_default_rda(), # Get from Nutrient model

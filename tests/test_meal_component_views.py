@@ -131,17 +131,17 @@ class MealComponentViewSetTests(APITestCase):
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Assuming pagination is turned off as per user's manual change
-        self.assertFalse('results' in response.data, "Response should not be paginated")
-        self.assertEqual(len(response.data), 2)
+        
+        results = response.data # Data is the list itself
+        self.assertEqual(len(results), 2) # Check length of the list
         
         # Check that the meal component names match what we expect
-        component_names = [component['name'] for component in response.data]
+        component_names = [component['name'] for component in results]
         self.assertIn("Chicken and Rice Bowl", component_names)
         self.assertIn("Broccoli Side", component_names)
         
         # Check that the first component has the expected category
-        for component in response.data:
+        for component in results:
             if component['name'] == "Chicken and Rice Bowl":
                 self.assertEqual(component['category_tag'], "Lunch")
             elif component['name'] == "Broccoli Side":
@@ -313,10 +313,10 @@ class MealComponentViewSetTests(APITestCase):
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Assuming pagination is turned off
-        self.assertFalse('results' in response.data, "Response should not be paginated")
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['name'], 'Chicken and Rice Bowl')
+        
+        results = response.data # Data is the list itself
+        self.assertEqual(len(results), 1) # Check length of the list
+        self.assertEqual(results[0]['name'], 'Chicken and Rice Bowl')
 
     def test_search_by_category_tag(self):
         """Test searching meal components by category tag."""
@@ -324,10 +324,10 @@ class MealComponentViewSetTests(APITestCase):
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Assuming pagination is turned off
-        self.assertFalse('results' in response.data, "Response should not be paginated")
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['name'], 'Broccoli Side')
+        
+        results = response.data # Data is the list itself
+        self.assertEqual(len(results), 1) # Check length of the list
+        self.assertEqual(results[0]['name'], 'Broccoli Side')
 
     def test_ordering_by_name(self):
         """Test ordering meal components by name."""
@@ -343,26 +343,25 @@ class MealComponentViewSetTests(APITestCase):
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Assuming pagination is turned off
-        self.assertFalse('results' in response.data, "Response should not be paginated")
-        self.assertEqual(len(response.data), 3)
+        
+        results = response.data # Data is the list itself
+        self.assertEqual(len(results), 3) # Check length of the list
         
         # Check the order of meal components
-        self.assertEqual(response.data[0]['name'], 'Avocado Toast')
-        self.assertEqual(response.data[1]['name'], 'Broccoli Side')
-        self.assertEqual(response.data[2]['name'], 'Chicken and Rice Bowl')
+        self.assertEqual(results[0]['name'], 'Avocado Toast')
+        self.assertEqual(results[1]['name'], 'Broccoli Side')
+        self.assertEqual(results[2]['name'], 'Chicken and Rice Bowl')
         
         # Test reverse ordering
         url = reverse('mealcomponent-list') + '?ordering=-name'
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Assuming pagination is turned off
-        self.assertFalse('results' in response.data, "Response should not be paginated")
-        self.assertEqual(len(response.data), 3)
-        self.assertEqual(response.data[0]['name'], 'Chicken and Rice Bowl')
-        self.assertEqual(response.data[1]['name'], 'Broccoli Side')
-        self.assertEqual(response.data[2]['name'], 'Avocado Toast')
+        results = response.data # get results from non-paginated response
+        self.assertEqual(len(results), 3) # Check length of the list for reverse ordering
+        self.assertEqual(results[0]['name'], 'Chicken and Rice Bowl')
+        self.assertEqual(results[1]['name'], 'Broccoli Side')
+        self.assertEqual(results[2]['name'], 'Avocado Toast')
 
     def test_ordering_by_category_tag(self):
         """Test ordering meal components by category tag."""
@@ -378,10 +377,9 @@ class MealComponentViewSetTests(APITestCase):
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Assuming pagination is turned off
-        self.assertFalse('results' in response.data, "Response should not be paginated")
-        self.assertEqual(len(response.data), 3)
+        results = response.data # Data is the list itself
+        self.assertEqual(len(results), 3) # Check length of the list
         
         # Check the order of meal components (alphabetical by category_tag)
-        categories = [component['category_tag'] for component in response.data]
+        categories = [component['category_tag'] for component in results]
         self.assertEqual(categories, ['Breakfast', 'Lunch', 'Side'])
