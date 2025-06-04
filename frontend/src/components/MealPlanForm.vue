@@ -43,7 +43,7 @@
     
     <hr />
     
-    <!-- Nutritional Breakdown Section - NOW A COMPONENT -->
+    <!-- Nutritional Breakdown Section -->
     <NutritionalBreakdown
       :breakdownData="livePlanNutritionalBreakdown"
       :activeView="activeBreakdownView"

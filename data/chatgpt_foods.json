@@ -1,0 +1,248 @@
+{
+  "metadata": {
+    "export_timestamp": "2025-05-26T19:30:13.597862",
+    "total_ingredients": 1,
+    "export_version": "1.0",
+    "description": "ChatGPT-generated food database entries"
+  },
+  "ingredients": [
+    {
+      "fdcId": -12345,
+      "description": "Flohsamenschalen gemahlen",
+      "foodClass": "ChatGPT",
+      "foodCategory": {
+        "description": "Nut/Seed",
+        "code": "NUT_SEED",
+        "id": -1
+      },
+      "foodNutrients": [
+        {
+          "nutrient": {
+            "id": 1087,
+            "name": "Calcium",
+            "unitName": "mg"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1005,
+            "name": "Carbohydrate",
+            "unitName": "g"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1253,
+            "name": "Cholesterol",
+            "unitName": "mg"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1180,
+            "name": "Choline",
+            "unitName": "mg"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1098,
+            "name": "Copper",
+            "unitName": "mg"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1008,
+            "name": "Energy",
+            "unitName": "kcal"
+          },
+          "amount": 208.0
+        },
+        {
+          "nutrient": {
+            "id": 1004,
+            "name": "Fat",
+            "unitName": "g"
+          },
+          "amount": 2.8
+        },
+        {
+          "nutrient": {
+            "id": 1100,
+            "name": "Iodine",
+            "unitName": "µg"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1089,
+            "name": "Iron",
+            "unitName": "mg"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1090,
+            "name": "Magnesium",
+            "unitName": "mg"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1101,
+            "name": "Manganese",
+            "unitName": "mg"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1102,
+            "name": "Molybdenum",
+            "unitName": "µg"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1091,
+            "name": "Phosphorus",
+            "unitName": "mg"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1092,
+            "name": "Potassium",
+            "unitName": "mg"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1003,
+            "name": "Protein",
+            "unitName": "g"
+          },
+          "amount": 3.8
+        },
+        {
+          "nutrient": {
+            "id": 1103,
+            "name": "Selenium",
+            "unitName": "µg"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1093,
+            "name": "Sodium",
+            "unitName": "mg"
+          },
+          "amount": 0.08
+        },
+        {
+          "nutrient": {
+            "id": 2000,
+            "name": "Sugar",
+            "unitName": "g"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1106,
+            "name": "Vitamin A",
+            "unitName": "µg"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1178,
+            "name": "Vitamin B12",
+            "unitName": "µg"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1175,
+            "name": "Vitamin B6",
+            "unitName": "mg"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1190,
+            "name": "Vitamin B9",
+            "unitName": "µg"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1114,
+            "name": "Vitamin D",
+            "unitName": "µg"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1109,
+            "name": "Vitamin E",
+            "unitName": "mg"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1185,
+            "name": "Vitamin K",
+            "unitName": "µg"
+          },
+          "amount": 0.0
+        },
+        {
+          "nutrient": {
+            "id": 1095,
+            "name": "Zinc",
+            "unitName": "mg"
+          },
+          "amount": 0.0
+        }
+      ],
+      "foodPortions": [
+        {
+          "id": -54321,
+          "amount": 1.0,
+          "gramWeight": 100.0,
+          "modifier": "ground",
+          "portionDescription": "100 g",
+          "sequenceNumber": 1,
+          "measureUnit": {
+            "id": -1,
+            "name": "g",
+            "abbreviation": "g"
+          }
+        }
+      ],
+      "notes": "AI-generated ingredient. Original category: Seeds and Nuts",
+      "createdAt": 5813,
+      "baseUnit": "g"
+    }
+  ]
+}

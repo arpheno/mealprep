@@ -1,5 +1,383 @@
 [
   {
+    "fdcId": -20,
+    "description": "Tofu, natur, fest, roh (Deutschland)",
+    "foodClass": "Custom",
+    "foodCategory": {
+      "description": "Legumes and Legume Products",
+      "code": "9999",
+      "id": -1
+    },
+    "foodNutrients": [
+      {
+        "nutrient": {
+          "id": 1008,
+          "number": "208",
+          "name": "Energy",
+          "unitName": "kcal"
+        },
+        "amount": 144.0
+      },
+      {
+        "nutrient": {
+          "id": 1003,
+          "number": "203",
+          "name": "Protein",
+          "unitName": "g"
+        },
+        "amount": 17.3
+      },
+      {
+        "nutrient": {
+          "id": 1004,
+          "number": "204",
+          "name": "Total lipid (fat)",
+          "unitName": "g"
+        },
+        "amount": 8.7
+      },
+      {
+        "nutrient": {
+          "id": 1258,
+          "number": "606",
+          "name": "Fatty acids, total saturated",
+          "unitName": "g"
+        },
+        "amount": 1.3
+      },
+      {
+        "nutrient": {
+          "id": 1292,
+          "number": "645",
+          "name": "Fatty acids, total monounsaturated",
+          "unitName": "g"
+        },
+        "amount": 1.9
+      },
+      {
+        "nutrient": {
+          "id": 1293,
+          "number": "646",
+          "name": "Fatty acids, total polyunsaturated",
+          "unitName": "g"
+        },
+        "amount": 4.9
+      },
+      {
+        "nutrient": {
+          "id": 1005,
+          "number": "205",
+          "name": "Carbohydrate, by difference",
+          "unitName": "g"
+        },
+        "amount": 2.8
+      },
+      {
+        "nutrient": {
+          "id": 1079,
+          "number": "291",
+          "name": "Fiber, total dietary",
+          "unitName": "g"
+        },
+        "amount": 2.3
+      },
+      {
+        "nutrient": {
+          "id": 2000,
+          "number": "269",
+          "name": "Sugars, total",
+          "unitName": "g"
+        },
+        "amount": 0.0
+      },
+      {
+        "nutrient": {
+          "id": 1093,
+          "number": "307",
+          "name": "Sodium, Na",
+          "unitName": "mg"
+        },
+        "amount": 14.0
+      },
+      {
+        "nutrient": {
+          "id": 1158,
+          "number": "851",
+          "name": "PUFA 18:3 n-3 (ALA)",
+          "unitName": "g"
+        },
+        "amount": 0.36
+      },
+      {
+        "nutrient": {
+          "id": 1278,
+          "number": "629",
+          "name": "PUFA 20:5 (EPA)",
+          "unitName": "g"
+        },
+        "amount": 0.0
+      },
+      {
+        "nutrient": {
+          "id": 1279,
+          "number": "631",
+          "name": "PUFA 22:6 (DHA)",
+          "unitName": "g"
+        },
+        "amount": 0.0
+      },
+      {
+        "nutrient": {
+          "id": 1087,
+          "number": "301",
+          "name": "Calcium, Ca",
+          "unitName": "mg"
+        },
+        "amount": 683.0
+      },
+      {
+        "nutrient": {
+          "id": 1089,
+          "number": "303",
+          "name": "Iron, Fe",
+          "unitName": "mg"
+        },
+        "amount": 2.7
+      },
+      {
+        "nutrient": {
+          "id": 1090,
+          "number": "304",
+          "name": "Magnesium, Mg",
+          "unitName": "mg"
+        },
+        "amount": 58.0
+      },
+      {
+        "nutrient": {
+          "id": 1091,
+          "number": "305",
+          "name": "Phosphorus, P",
+          "unitName": "mg"
+        },
+        "amount": 190.0
+      },
+      {
+        "nutrient": {
+          "id": 1092,
+          "number": "306",
+          "name": "Potassium, K",
+          "unitName": "mg"
+        },
+        "amount": 237.0
+      },
+      {
+        "nutrient": {
+          "id": 1095,
+          "number": "309",
+          "name": "Zinc, Zn",
+          "unitName": "mg"
+        },
+        "amount": 1.6
+      },
+      {
+        "nutrient": {
+          "id": 1098,
+          "number": "312",
+          "name": "Copper, Cu",
+          "unitName": "mg"
+        },
+        "amount": 0.38
+      },
+      {
+        "nutrient": {
+          "id": 1101,
+          "number": "315",
+          "name": "Manganese, Mn",
+          "unitName": "mg"
+        },
+        "amount": 1.2
+      },
+      {
+        "nutrient": {
+          "id": 1103,
+          "number": "317",
+          "name": "Selenium, Se",
+          "unitName": "µg"
+        },
+        "amount": 17.0
+      },
+      {
+        "nutrient": {
+          "id": 1100,
+          "number": "314",
+          "name": "Iodine, I",
+          "unitName": "µg"
+        },
+        "amount": 4.0
+      },
+      {
+        "nutrient": {
+          "id": 1106,
+          "number": "320",
+          "name": "Vitamin A, RAE",
+          "unitName": "µg"
+        },
+        "amount": 0.0
+      },
+      {
+        "nutrient": {
+          "id": 1107,
+          "number": "321",
+          "name": "Carotene, beta",
+          "unitName": "µg"
+        },
+        "amount": 0.0
+      },
+      {
+        "nutrient": {
+          "id": 1109,
+          "number": "323",
+          "name": "Vitamin E",
+          "unitName": "mg"
+        },
+        "amount": 0.01
+      },
+      {
+        "nutrient": {
+          "id": 1190,
+          "number": "435",
+          "name": "Folate, DFE",
+          "unitName": "µg"
+        },
+        "amount": 29.0
+      },
+      {
+        "nutrient": {
+          "id": 1165,
+          "number": "404",
+          "name": "Thiamin (B1)",
+          "unitName": "mg"
+        },
+        "amount": 0.16
+      },
+      {
+        "nutrient": {
+          "id": 1166,
+          "number": "405",
+          "name": "Riboflavin (B2)",
+          "unitName": "mg"
+        },
+        "amount": 0.10
+      },
+      {
+        "nutrient": {
+          "id": 1167,
+          "number": "406",
+          "name": "Niacin (B3 equivalent)",
+          "unitName": "mg"
+        },
+        "amount": 0.38
+      },
+      {
+        "nutrient": {
+          "id": 1170,
+          "number": "410",
+          "name": "Pantothenic acid (B5)",
+          "unitName": "mg"
+        },
+        "amount": 0.13
+      },
+      {
+        "nutrient": {
+          "id": 1175,
+          "number": "415",
+          "name": "Vitamin B-6",
+          "unitName": "mg"
+        },
+        "amount": 0.09
+      },
+      {
+        "nutrient": {
+          "id": 1176,
+          "number": "416",
+          "name": "Biotin (B7)",
+          "unitName": "µg"
+        },
+        "amount": 2.0
+      },
+      {
+        "nutrient": {
+          "id": 1178,
+          "number": "418",
+          "name": "Vitamin B-12",
+          "unitName": "µg"
+        },
+        "amount": 0.0
+      },
+      {
+        "nutrient": {
+          "id": 1185,
+          "number": "430",
+          "name": "Vitamin K",
+          "unitName": "µg"
+        },
+        "amount": 2.0
+      },
+      {
+        "nutrient": {
+          "id": 1114,
+          "number": "324",
+          "name": "Vitamin D",
+          "unitName": "µg"
+        },
+        "amount": 0.0
+      },
+      {
+        "nutrient": {
+          "id": 1102,
+          "number": "316",
+          "name": "Molybdenum, Mo",
+          "unitName": "µg"
+        },
+        "amount": 41.0
+      },
+      {
+        "nutrient": {
+          "id": 1253,
+          "number": "601",
+          "name": "Cholesterol",
+          "unitName": "mg"
+        },
+        "amount": 0.0
+      },
+      {
+        "nutrient": {
+          "id": 1180,
+          "number": "421",
+          "name": "Choline",
+          "unitName": "mg"
+        },
+        "amount": 28.0
+      }
+    ],
+    "foodPortions": [
+      {
+        "id": -2001,
+        "amount": 1.0,
+        "gramWeight": 100.0,
+        "modifier": "raw, firm",
+        "portionDescription": "100 g",
+        "sequenceNumber": 1,
+        "measureUnit": {
+          "id": -200101,
+          "name": "g",
+          "abbreviation": "g"
+        }
+      }
+    ]
+  },
+  {
     "fdcId": -1,
     "description": "Tofu, raw",
     "foodClass": "Custom",
@@ -12,9 +390,6 @@
       {
         "nutrient": {
           "id": 1051,
-          "number": "255",
-          "name": "Water",
-          "rank": 100,
           "unitName": "g"
         },
         "amount": 84.6
@@ -22,9 +397,6 @@
       {
         "nutrient": {
           "id": 1008,
-          "number": "208",
-          "name": "Energy",
-          "rank": 300,
           "unitName": "kcal"
         },
         "amount": 137.0
@@ -32,9 +404,6 @@
       {
         "nutrient": {
           "id": 1003,
-          "number": "203",
-          "name": "Protein",
-          "rank": 600,
           "unitName": "g"
         },
         "amount": 15.0
@@ -42,9 +411,6 @@
       {
         "nutrient": {
           "id": 1004,
-          "number": "204",
-          "name": "Total lipid (fat)",
-          "rank": 800,
           "unitName": "g"
         },
         "amount": 8.0
@@ -52,9 +418,6 @@
       {
         "nutrient": {
           "id": 1007,
-          "number": "207",
-          "name": "Ash",
-          "rank": 1000,
           "unitName": "g"
         },
         "amount": 0.72
@@ -62,9 +425,6 @@
       {
         "nutrient": {
           "id": 1005,
-          "number": "205",
-          "name": "Carbohydrate, by difference",
-          "rank": 1110,
           "unitName": "g"
         },
         "amount": 0.7
@@ -72,9 +432,6 @@
       {
         "nutrient": {
           "id": 1079,
-          "number": "291",
-          "name": "Fiber, total dietary",
-          "rank": 1200,
           "unitName": "g"
         },
         "amount": 1.0
@@ -82,9 +439,6 @@
       {
         "nutrient": {
           "id": 2000,
-          "number": "269",
-          "name": "Sugars, total including NLEA",
-          "rank": 1510,
           "unitName": "g"
         },
         "amount": 0.5
@@ -92,9 +446,6 @@
       {
         "nutrient": {
           "id": 1087,
-          "number": "301",
-          "name": "Calcium, Ca",
-          "rank": 5300,
           "unitName": "mg"
         },
         "amount": 350.0
@@ -102,9 +453,6 @@
       {
         "nutrient": {
           "id": 1089,
-          "number": "303",
-          "name": "Iron, Fe",
-          "rank": 5400,
           "unitName": "mg"
         },
         "amount": 5.36
@@ -112,9 +460,6 @@
       {
         "nutrient": {
           "id": 1090,
-          "number": "304",
-          "name": "Magnesium, Mg",
-          "rank": 5500,
           "unitName": "mg"
         },
         "amount": 30.0
@@ -122,9 +467,6 @@
       {
         "nutrient": {
           "id": 1091,
-          "number": "305",
-          "name": "Phosphorus, P",
-          "rank": 5600,
           "unitName": "mg"
         },
         "amount": 97.0
@@ -132,9 +474,6 @@
       {
         "nutrient": {
           "id": 1092,
-          "number": "306",
-          "name": "Potassium, K",
-          "rank": 5700,
           "unitName": "mg"
         },
         "amount": 121.0
@@ -142,9 +481,6 @@
       {
         "nutrient": {
           "id": 1093,
-          "number": "307",
-          "name": "Sodium, Na",
-          "rank": 5800,
           "unitName": "mg"
         },
         "amount": 7.0
@@ -152,9 +488,6 @@
       {
         "nutrient": {
           "id": 1095,
-          "number": "309",
-          "name": "Zinc, Zn",
-          "rank": 5900,
           "unitName": "mg"
         },
         "amount": 0.8
@@ -162,9 +495,6 @@
       {
         "nutrient": {
           "id": 1098,
-          "number": "312",
-          "name": "Copper, Cu",
-          "rank": 6000,
           "unitName": "mg"
         },
         "amount": 0.193
@@ -172,9 +502,6 @@
       {
         "nutrient": {
           "id": 1101,
-          "number": "315",
-          "name": "Manganese, Mn",
-          "rank": 6100,
           "unitName": "mg"
         },
         "amount": 0.605
@@ -182,9 +509,6 @@
       {
         "nutrient": {
           "id": 1103,
-          "number": "317",
-          "name": "Selenium, Se",
-          "rank": 6200,
           "unitName": "\u00b5g"
         },
         "amount": 8.9
@@ -192,9 +516,6 @@
       {
         "nutrient": {
           "id": 1162,
-          "number": "401",
-          "name": "Vitamin C",
-          "rank": 6300,
           "unitName": "mg"
         },
         "amount": 0.1
@@ -202,9 +523,6 @@
       {
         "nutrient": {
           "id": 1165,
-          "number": "404",
-          "name": "Thiamin",
-          "rank": 6400,
           "unitName": "mg"
         },
         "amount": 0.081
@@ -212,9 +530,6 @@
       {
         "nutrient": {
           "id": 1166,
-          "number": "405",
-          "name": "Riboflavin",
-          "rank": 6500,
           "unitName": "mg"
         },
         "amount": 0.052
@@ -222,9 +537,6 @@
       {
         "nutrient": {
           "id": 1167,
-          "number": "406",
-          "name": "Niacin",
-          "rank": 6600,
           "unitName": "mg"
         },
         "amount": 0.195
@@ -232,9 +544,6 @@
       {
         "nutrient": {
           "id": 1170,
-          "number": "410",
-          "name": "Pantothenic acid",
-          "rank": 6700,
           "unitName": "mg"
         },
         "amount": 0.068
@@ -242,9 +551,6 @@
       {
         "nutrient": {
           "id": 1175,
-          "number": "415",
-          "name": "Vitamin B-6",
-          "rank": 6800,
           "unitName": "mg"
         },
         "amount": 0.047
@@ -252,9 +558,6 @@
       {
         "nutrient": {
           "id": 1190,
-          "number": "435",
-          "name": "Folate, DFE",
-          "rank": 7100,
           "unitName": "\u00b5g"
         },
         "amount": 15.0
@@ -262,9 +565,6 @@
       {
         "nutrient": {
           "id": 1186,
-          "number": "437",
-          "name": "Choline, total",
-          "rank": 7110,
           "unitName": "mg"
         },
         "amount": 28.8
@@ -272,9 +572,6 @@
       {
         "nutrient": {
           "id": 1104,
-          "number": "318",
-          "name": "Vitamin A, IU",
-          "rank": 7410,
           "unitName": "IU"
         },
         "amount": 85.0
@@ -282,9 +579,6 @@
       {
         "nutrient": {
           "id": 1109,
-          "number": "323",
-          "name": "Vitamin E",
-          "rank": 7900,
           "unitName": "mg"
         },
         "amount": 0.01
@@ -292,9 +586,6 @@
       {
         "nutrient": {
           "id": 1185,
-          "number": "430",
-          "name": "Vitamin K",
-          "rank": 8800,
           "unitName": "\u00b5g"
         },
         "amount": 2.4
@@ -302,9 +593,6 @@
       {
         "nutrient": {
           "id": 1258,
-          "number": "606",
-          "name": "Fatty acids, total saturated",
-          "rank": 9700,
           "unitName": "g"
         },
         "amount": 0.691
@@ -312,9 +600,6 @@
       {
         "nutrient": {
           "id": 1264,
-          "number": "612",
-          "name": "SFA 14:0",
-          "rank": 10500,
           "unitName": "g"
         },
         "amount": 0.013
@@ -332,9 +617,6 @@
       {
         "nutrient": {
           "id": 1266,
-          "number": "614",
-          "name": "SFA 18:0",
-          "rank": 10900,
           "unitName": "g"
         },
         "amount": 0.171
@@ -342,9 +624,6 @@
       {
         "nutrient": {
           "id": 1292,
-          "number": "645",
-          "name": "Fatty acids, total monounsaturated",
-          "rank": 11400,
           "unitName": "g"
         },
         "amount": 1.06
@@ -352,9 +631,6 @@
       {
         "nutrient": {
           "id": 1293,
-          "number": "646",
-          "name": "Fatty acids, total polyunsaturated",
-          "rank": 12900,
           "unitName": "g"
         },
         "amount": 2.7
@@ -4940,6 +5216,15 @@
       },
       {
         "nutrient": {
+          "id": 1102,
+          "number": "316",
+          "name": "Molybdenum, Mo",
+          "unitName": "µg"
+        },
+        "amount": 15.0
+      },
+      {
+        "nutrient": {
           "id": 1008,
           "number": "208",
           "name": "Energy",
@@ -5138,7 +5423,6 @@
         },
         "amount": 0.136
       },
-     
       {
         "nutrient": {
           "id": 1180,
@@ -5149,7 +5433,6 @@
         },
         "amount": 52.1
       },
-      
       {
         "nutrient": {
           "id": 1190,
@@ -5169,86 +5452,6 @@
           "unitName": "g"
         },
         "amount": 4.09
-      },
-      {
-        "nutrient": {
-          "id": 1264,
-          "number": "612",
-          "name": "SFA 14:0",
-          "rank": 10500,
-          "unitName": "g"
-        },
-        "amount": 0.019
-      },
-      {
-        "nutrient": {
-          "id": 1265,
-          "number": "613",
-          "name": "SFA 16:0",
-          "rank": 10700,
-          "unitName": "g"
-        },
-        "amount": 3.35
-      },
-      {
-        "nutrient": {
-          "id": 1266,
-          "number": "614",
-          "name": "SFA 18:0",
-          "rank": 10900,
-          "unitName": "g"
-        },
-        "amount": 0.704
-      },
-      {
-        "nutrient": {
-          "id": 1268,
-          "number": "617",
-          "name": "MUFA 18:1",
-          "rank": 12100,
-          "unitName": "g"
-        },
-        "amount": 32.8
-      },
-      {
-        "nutrient": {
-          "id": 1269,
-          "number": "618",
-          "name": "PUFA 18:2",
-          "rank": 13100,
-          "unitName": "g"
-        },
-        "amount": 12.9
-      },
-      {
-        "nutrient": {
-          "id": 1270,
-          "number": "619",
-          "name": "PUFA 18:3",
-          "rank": 13900,
-          "unitName": "g"
-        },
-        "amount": 0.01
-      },
-      {
-        "nutrient": {
-          "id": 1275,
-          "number": "626",
-          "name": "MUFA 16:1",
-          "rank": 11700,
-          "unitName": "g"
-        },
-        "amount": 0.259
-      },
-      {
-        "nutrient": {
-          "id": 1277,
-          "number": "628",
-          "name": "MUFA 20:1",
-          "rank": 12400,
-          "unitName": "g"
-        },
-        "amount": 0.007
       },
       {
         "nutrient": {
@@ -5371,30 +5574,231 @@
       "id": -1
     },
     "foodNutrients": [
-      { "nutrient": { "id": 1008, "number": "208", "name": "Energy", "unitName": "kcal" }, "amount": 679.0 },
-      { "nutrient": { "id": 1003, "number": "203", "name": "Protein", "unitName": "g" }, "amount": 14.0 },
-      { "nutrient": { "id": 1004, "number": "204", "name": "Total lipid (fat)", "unitName": "g" }, "amount": 63.0 },
-      { "nutrient": { "id": 1005, "number": "205", "name": "Carbohydrate, by difference", "unitName": "g" }, "amount": 11.0 },
-      { "nutrient": { "id": 2000, "number": "269", "name": "Sugars, total", "unitName": "g" }, "amount": 6.9 },
-      { "nutrient": { "id": 1079, "number": "291", "name": "Fiber, total dietary", "unitName": "g" }, "amount": 6.7 },
-      { "nutrient": { "id": 1087, "number": "301", "name": "Calcium, Ca", "unitName": "mg" }, "amount": 98.0 },
-      { "nutrient": { "id": 1089, "number": "303", "name": "Iron, Fe", "unitName": "mg" }, "amount": 2.9 },
-      { "nutrient": { "id": 1090, "number": "304", "name": "Magnesium, Mg", "unitName": "mg" }, "amount": 160.0 },
-      { "nutrient": { "id": 1091, "number": "305", "name": "Phosphorus, P", "unitName": "mg" }, "amount": 346.0 },
-      { "nutrient": { "id": 1092, "number": "306", "name": "Potassium, K", "unitName": "mg" }, "amount": 441.0 },
-      { "nutrient": { "id": 1093, "number": "307", "name": "Sodium, Na", "unitName": "mg" }, "amount": 2.0 },
-      { "nutrient": { "id": 1095, "number": "309", "name": "Zinc, Zn", "unitName": "mg" }, "amount": 3.1 },
-      { "nutrient": { "id": 1098, "number": "312", "name": "Copper, Cu", "unitName": "mg" }, "amount": 1.6 },
-      { "nutrient": { "id": 1103, "number": "317", "name": "Selenium, Se", "unitName": "µg" }, "amount": 4.9 },
-      { "nutrient": { "id": 1101, "number": "315", "name": "Manganese, Mn", "unitName": "mg" }, "amount": 3.4 },
-      { "nutrient": { "id": 1165, "number": "404", "name": "Thiamin", "unitName": "mg" }, "amount": 0.34 },
-      { "nutrient": { "id": 1166, "number": "405", "name": "Riboflavin", "unitName": "mg" }, "amount": 0.15 },
-      { "nutrient": { "id": 1167, "number": "406", "name": "Niacin", "unitName": "mg" }, "amount": 1.1 },
-      { "nutrient": { "id": 1175, "number": "415", "name": "Vitamin B-6", "unitName": "mg" }, "amount": 0.54 },
-      { "nutrient": { "id": 1190, "number": "435", "name": "Folate, DFE", "unitName": "µg" }, "amount": 98.0 },
-      { "nutrient": { "id": 1109, "number": "323", "name": "Vitamin E (alpha-tocopherol)", "unitName": "mg" }, "amount": 0.7 },
-      { "nutrient": { "id": 1292, "number": "645", "name": "Fatty acids, total monounsaturated", "unitName": "g" }, "amount": 8.9 },
-      { "nutrient": { "id": 1293, "number": "646", "name": "Fatty acids, total polyunsaturated", "unitName": "g" }, "amount": 47.2 }
+      {
+        "nutrient": {
+          "id": 1008,
+          "number": "208",
+          "name": "Energy",
+          "unitName": "kcal"
+        },
+        "amount": 679.0
+      },
+      {
+        "nutrient": {
+          "id": 1003,
+          "number": "203",
+          "name": "Protein",
+          "unitName": "g"
+        },
+        "amount": 14.0
+      },
+      {
+        "nutrient": {
+          "id": 1004,
+          "number": "204",
+          "name": "Total lipid (fat)",
+          "unitName": "g"
+        },
+        "amount": 63.0
+      },
+      {
+        "nutrient": {
+          "id": 1005,
+          "number": "205",
+          "name": "Carbohydrate, by difference",
+          "unitName": "g"
+        },
+        "amount": 11.0
+      },
+      {
+        "nutrient": {
+          "id": 2000,
+          "number": "269",
+          "name": "Sugars, total",
+          "unitName": "g"
+        },
+        "amount": 6.9
+      },
+      {
+        "nutrient": {
+          "id": 1079,
+          "number": "291",
+          "name": "Fiber, total dietary",
+          "unitName": "g"
+        },
+        "amount": 6.7
+      },
+      {
+        "nutrient": {
+          "id": 1087,
+          "number": "301",
+          "name": "Calcium, Ca",
+          "unitName": "mg"
+        },
+        "amount": 98.0
+      },
+      {
+        "nutrient": {
+          "id": 1089,
+          "number": "303",
+          "name": "Iron, Fe",
+          "unitName": "mg"
+        },
+        "amount": 2.9
+      },
+      {
+        "nutrient": {
+          "id": 1090,
+          "number": "304",
+          "name": "Magnesium, Mg",
+          "unitName": "mg"
+        },
+        "amount": 160.0
+      },
+      {
+        "nutrient": {
+          "id": 1091,
+          "number": "305",
+          "name": "Phosphorus, P",
+          "unitName": "mg"
+        },
+        "amount": 346.0
+      },
+      {
+        "nutrient": {
+          "id": 1092,
+          "number": "306",
+          "name": "Potassium, K",
+          "unitName": "mg"
+        },
+        "amount": 441.0
+      },
+      {
+        "nutrient": {
+          "id": 1093,
+          "number": "307",
+          "name": "Sodium, Na",
+          "unitName": "mg"
+        },
+        "amount": 2.0
+      },
+      {
+        "nutrient": {
+          "id": 1095,
+          "number": "309",
+          "name": "Zinc, Zn",
+          "unitName": "mg"
+        },
+        "amount": 3.1
+      },
+      {
+        "nutrient": {
+          "id": 1098,
+          "number": "312",
+          "name": "Copper, Cu",
+          "unitName": "mg"
+        },
+        "amount": 1.6
+      },
+      {
+        "nutrient": {
+          "id": 1103,
+          "number": "317",
+          "name": "Selenium, Se",
+          "unitName": "µg"
+        },
+        "amount": 4.9
+      },
+      {
+        "nutrient": {
+          "id": 1101,
+          "number": "315",
+          "name": "Manganese, Mn",
+          "unitName": "mg"
+        },
+        "amount": 3.4
+      },
+      {
+        "nutrient": {
+          "id": 1165,
+          "number": "404",
+          "name": "Thiamin",
+          "unitName": "mg"
+        },
+        "amount": 0.34
+      },
+      {
+        "nutrient": {
+          "id": 1166,
+          "number": "405",
+          "name": "Riboflavin",
+          "unitName": "mg"
+        },
+        "amount": 0.15
+      },
+      {
+        "nutrient": {
+          "id": 1102,
+          "number": "316",
+          "name": "Molybdenum, Mo",
+          "unitName": "µg"
+        },
+        "amount": 20.0
+      },
+      {
+        "nutrient": {
+          "id": 1167,
+          "number": "406",
+          "name": "Niacin",
+          "unitName": "mg"
+        },
+        "amount": 1.1
+      },
+      {
+        "nutrient": {
+          "id": 1175,
+          "number": "415",
+          "name": "Vitamin B-6",
+          "unitName": "mg"
+        },
+        "amount": 0.54
+      },
+      {
+        "nutrient": {
+          "id": 1190,
+          "number": "435",
+          "name": "Folate, DFE",
+          "unitName": "µg"
+        },
+        "amount": 98.0
+      },
+      {
+        "nutrient": {
+          "id": 1109,
+          "number": "323",
+          "name": "Vitamin E (alpha-tocopherol)",
+          "unitName": "mg"
+        },
+        "amount": 0.7
+      },
+      {
+        "nutrient": {
+          "id": 1292,
+          "number": "645",
+          "name": "Fatty acids, total monounsaturated",
+          "unitName": "g"
+        },
+        "amount": 8.9
+      },
+      {
+        "nutrient": {
+          "id": 1293,
+          "number": "646",
+          "name": "Fatty acids, total polyunsaturated",
+          "unitName": "g"
+        },
+        "amount": 47.2
+      }
     ],
     "foodPortions": [
       {
@@ -5422,30 +5826,231 @@
       "id": -1
     },
     "foodNutrients": [
-      { "nutrient": { "id": 1008, "number": "208", "name": "Energy", "unitName": "kcal" }, "amount": 590.0 },
-      { "nutrient": { "id": 1003, "number": "203", "name": "Protein", "unitName": "g" }, "amount": 20.0 },
-      { "nutrient": { "id": 1004, "number": "204", "name": "Total lipid (fat)", "unitName": "g" }, "amount": 45.0 },
-      { "nutrient": { "id": 1005, "number": "205", "name": "Carbohydrate, by difference", "unitName": "g" }, "amount": 24.0 },
-      { "nutrient": { "id": 2000, "number": "269", "name": "Sugars, total", "unitName": "g" }, "amount": 7.5 },
-      { "nutrient": { "id": 1079, "number": "291", "name": "Fiber, total dietary", "unitName": "g" }, "amount": 3.5 },
-      { "nutrient": { "id": 1087, "number": "301", "name": "Calcium, Ca", "unitName": "mg" }, "amount": 37.0 },
-      { "nutrient": { "id": 1089, "number": "303", "name": "Iron, Fe", "unitName": "mg" }, "amount": 6.7 },
-      { "nutrient": { "id": 1090, "number": "304", "name": "Magnesium, Mg", "unitName": "mg" }, "amount": 292.0 },
-      { "nutrient": { "id": 1091, "number": "305", "name": "Phosphorus, P", "unitName": "mg" }, "amount": 593.0 },
-      { "nutrient": { "id": 1092, "number": "306", "name": "Potassium, K", "unitName": "mg" }, "amount": 660.0 },
-      { "nutrient": { "id": 1093, "number": "307", "name": "Sodium, Na", "unitName": "mg" }, "amount": 12.0 },
-      { "nutrient": { "id": 1095, "number": "309", "name": "Zinc, Zn", "unitName": "mg" }, "amount": 5.8 },
-      { "nutrient": { "id": 1098, "number": "312", "name": "Copper, Cu", "unitName": "mg" }, "amount": 2.2 },
-      { "nutrient": { "id": 1103, "number": "317", "name": "Selenium, Se", "unitName": "µg" }, "amount": 19.9 },
-      { "nutrient": { "id": 1101, "number": "315", "name": "Manganese, Mn", "unitName": "mg" }, "amount": 1.7 },
-      { "nutrient": { "id": 1165, "number": "404", "name": "Thiamin", "unitName": "mg" }, "amount": 0.42 },
-      { "nutrient": { "id": 1166, "number": "405", "name": "Riboflavin", "unitName": "mg" }, "amount": 0.06 },
-      { "nutrient": { "id": 1167, "number": "406", "name": "Niacin", "unitName": "mg" }, "amount": 1.1 },
-      { "nutrient": { "id": 1175, "number": "415", "name": "Vitamin B-6", "unitName": "mg" }, "amount": 0.42 },
-      { "nutrient": { "id": 1190, "number": "435", "name": "Folate, DFE", "unitName": "µg" }, "amount": 25.0 },
-      { "nutrient": { "id": 1109, "number": "323", "name": "Vitamin E (alpha-tocopherol)", "unitName": "mg" }, "amount": 0.9 },
-      { "nutrient": { "id": 1292, "number": "645", "name": "Fatty acids, total monounsaturated", "unitName": "g" }, "amount": 24.2 },
-      { "nutrient": { "id": 1293, "number": "646", "name": "Fatty acids, total polyunsaturated", "unitName": "g" }, "amount": 7.8 }
+      {
+        "nutrient": {
+          "id": 1008,
+          "number": "208",
+          "name": "Energy",
+          "unitName": "kcal"
+        },
+        "amount": 590.0
+      },
+      {
+        "nutrient": {
+          "id": 1003,
+          "number": "203",
+          "name": "Protein",
+          "unitName": "g"
+        },
+        "amount": 20.0
+      },
+      {
+        "nutrient": {
+          "id": 1004,
+          "number": "204",
+          "name": "Total lipid (fat)",
+          "unitName": "g"
+        },
+        "amount": 45.0
+      },
+      {
+        "nutrient": {
+          "id": 1005,
+          "number": "205",
+          "name": "Carbohydrate, by difference",
+          "unitName": "g"
+        },
+        "amount": 24.0
+      },
+      {
+        "nutrient": {
+          "id": 2000,
+          "number": "269",
+          "name": "Sugars, total",
+          "unitName": "g"
+        },
+        "amount": 7.5
+      },
+      {
+        "nutrient": {
+          "id": 1079,
+          "number": "291",
+          "name": "Fiber, total dietary",
+          "unitName": "g"
+        },
+        "amount": 3.5
+      },
+      {
+        "nutrient": {
+          "id": 1087,
+          "number": "301",
+          "name": "Calcium, Ca",
+          "unitName": "mg"
+        },
+        "amount": 37.0
+      },
+      {
+        "nutrient": {
+          "id": 1089,
+          "number": "303",
+          "name": "Iron, Fe",
+          "unitName": "mg"
+        },
+        "amount": 6.7
+      },
+      {
+        "nutrient": {
+          "id": 1090,
+          "number": "304",
+          "name": "Magnesium, Mg",
+          "unitName": "mg"
+        },
+        "amount": 292.0
+      },
+      {
+        "nutrient": {
+          "id": 1091,
+          "number": "305",
+          "name": "Phosphorus, P",
+          "unitName": "mg"
+        },
+        "amount": 593.0
+      },
+      {
+        "nutrient": {
+          "id": 1092,
+          "number": "306",
+          "name": "Potassium, K",
+          "unitName": "mg"
+        },
+        "amount": 660.0
+      },
+      {
+        "nutrient": {
+          "id": 1093,
+          "number": "307",
+          "name": "Sodium, Na",
+          "unitName": "mg"
+        },
+        "amount": 12.0
+      },
+      {
+        "nutrient": {
+          "id": 1095,
+          "number": "309",
+          "name": "Zinc, Zn",
+          "unitName": "mg"
+        },
+        "amount": 5.8
+      },
+      {
+        "nutrient": {
+          "id": 1098,
+          "number": "312",
+          "name": "Copper, Cu",
+          "unitName": "mg"
+        },
+        "amount": 2.2
+      },
+      {
+        "nutrient": {
+          "id": 1103,
+          "number": "317",
+          "name": "Selenium, Se",
+          "unitName": "µg"
+        },
+        "amount": 19.9
+      },
+      {
+        "nutrient": {
+          "id": 1101,
+          "number": "315",
+          "name": "Manganese, Mn",
+          "unitName": "mg"
+        },
+        "amount": 1.7
+      },
+      {
+        "nutrient": {
+          "id": 1165,
+          "number": "404",
+          "name": "Thiamin",
+          "unitName": "mg"
+        },
+        "amount": 0.42
+      },
+      {
+        "nutrient": {
+          "id": 1166,
+          "number": "405",
+          "name": "Riboflavin",
+          "unitName": "mg"
+        },
+        "amount": 0.06
+      },
+      {
+        "nutrient": {
+          "id": 1167,
+          "number": "406",
+          "name": "Niacin",
+          "unitName": "mg"
+        },
+        "amount": 1.1
+      },
+      {
+        "nutrient": {
+          "id": 1175,
+          "number": "415",
+          "name": "Vitamin B-6",
+          "unitName": "mg"
+        },
+        "amount": 0.42
+      },
+      {
+        "nutrient": {
+          "id": 1102,
+          "number": "316",
+          "name": "Molybdenum, Mo",
+          "unitName": "µg"
+        },
+        "amount": 21.0
+      },
+      {
+        "nutrient": {
+          "id": 1190,
+          "number": "435",
+          "name": "Folate, DFE",
+          "unitName": "µg"
+        },
+        "amount": 25.0
+      },
+      {
+        "nutrient": {
+          "id": 1109,
+          "number": "323",
+          "name": "Vitamin E (alpha-tocopherol)",
+          "unitName": "mg"
+        },
+        "amount": 0.9
+      },
+      {
+        "nutrient": {
+          "id": 1292,
+          "number": "645",
+          "name": "Fatty acids, total monounsaturated",
+          "unitName": "g"
+        },
+        "amount": 24.2
+      },
+      {
+        "nutrient": {
+          "id": 1293,
+          "number": "646",
+          "name": "Fatty acids, total polyunsaturated",
+          "unitName": "g"
+        },
+        "amount": 7.8
+      }
     ],
     "foodPortions": [
       {
@@ -5462,155 +6067,1013 @@
         }
       }
     ]
+  },
+  {
+    "fdcId": -16,
+    "description": "Geröstete Paprika",
+    "foodClass": "Custom",
+    "foodCategory": {
+      "description": "Vegetables and Vegetable Products",
+      "code": "9999",
+      "id": -1
+    },
+    "foodNutrients": [
+      {
+        "nutrient": {
+          "id": 1008,
+          "number": "208",
+          "name": "Energy",
+          "unitName": "kcal"
+        },
+        "amount": 54.0
+      },
+      {
+        "nutrient": {
+          "id": 1003,
+          "number": "203",
+          "name": "Protein",
+          "unitName": "g"
+        },
+        "amount": 0.8
+      },
+      {
+        "nutrient": {
+          "id": 1004,
+          "number": "204",
+          "name": "Total lipid (fat)",
+          "unitName": "g"
+        },
+        "amount": 0.6
+      },
+      {
+        "nutrient": {
+          "id": 1005,
+          "number": "205",
+          "name": "Carbohydrate, by difference",
+          "unitName": "g"
+        },
+        "amount": 11.0
+      },
+      {
+        "nutrient": {
+          "id": 2000,
+          "number": "269",
+          "name": "Sugars, total",
+          "unitName": "g"
+        },
+        "amount": 8.9
+      },
+      {
+        "nutrient": {
+          "id": 1079,
+          "number": "291",
+          "name": "Fiber, total dietary",
+          "unitName": "g"
+        },
+        "amount": 1.0
+      },
+      {
+        "nutrient": {
+          "id": 1093,
+          "number": "307",
+          "name": "Sodium, Na",
+          "unitName": "mg"
+        },
+        "amount": 800.0
+      },
+      {
+        "nutrient": {
+          "id": 1087,
+          "number": "301",
+          "name": "Calcium, Ca",
+          "unitName": "mg"
+        },
+        "amount": 10.0
+      },
+      {
+        "nutrient": {
+          "id": 1089,
+          "number": "303",
+          "name": "Iron, Fe",
+          "unitName": "mg"
+        },
+        "amount": 0.4
+      },
+      {
+        "nutrient": {
+          "id": 1090,
+          "number": "304",
+          "name": "Magnesium, Mg",
+          "unitName": "mg"
+        },
+        "amount": 12.0
+      },
+      {
+        "nutrient": {
+          "id": 1091,
+          "number": "305",
+          "name": "Phosphorus, P",
+          "unitName": "mg"
+        },
+        "amount": 24.0
+      },
+      {
+        "nutrient": {
+          "id": 1092,
+          "number": "306",
+          "name": "Potassium, K",
+          "unitName": "mg"
+        },
+        "amount": 208.0
+      },
+      {
+        "nutrient": {
+          "id": 1095,
+          "number": "309",
+          "name": "Zinc, Zn",
+          "unitName": "mg"
+        },
+        "amount": 0.2
+      },
+      {
+        "nutrient": {
+          "id": 1098,
+          "number": "312",
+          "name": "Copper, Cu",
+          "unitName": "mg"
+        },
+        "amount": 0.08
+      },
+      {
+        "nutrient": {
+          "id": 1103,
+          "number": "317",
+          "name": "Selenium, Se",
+          "unitName": "µg"
+        },
+        "amount": 0.1
+      },
+      {
+        "nutrient": {
+          "id": 1101,
+          "number": "315",
+          "name": "Manganese, Mn",
+          "unitName": "mg"
+        },
+        "amount": 0.09
+      },
+      {
+        "nutrient": {
+          "id": 1165,
+          "number": "404",
+          "name": "Thiamin",
+          "unitName": "mg"
+        },
+        "amount": 0.05
+      },
+      {
+        "nutrient": {
+          "id": 1166,
+          "number": "405",
+          "name": "Riboflavin",
+          "unitName": "mg"
+        },
+        "amount": 0.08
+      },
+      {
+        "nutrient": {
+          "id": 1167,
+          "number": "406",
+          "name": "Niacin",
+          "unitName": "mg"
+        },
+        "amount": 0.95
+      },
+      {
+        "nutrient": {
+          "id": 1175,
+          "number": "415",
+          "name": "Vitamin B-6",
+          "unitName": "mg"
+        },
+        "amount": 0.29
+      },
+      {
+        "nutrient": {
+          "id": 1190,
+          "number": "435",
+          "name": "Folate, DFE",
+          "unitName": "µg"
+        },
+        "amount": 20.0
+      },
+      {
+        "nutrient": {
+          "id": 1162,
+          "number": "401",
+          "name": "Vitamin C",
+          "unitName": "mg"
+        },
+        "amount": 84.0
+      },
+      {
+        "nutrient": {
+          "id": 1106,
+          "number": "320",
+          "name": "Vitamin A",
+          "unitName": "µg"
+        },
+        "amount": 157.0
+      },
+      {
+        "nutrient": {
+          "id": 1109,
+          "number": "323",
+          "name": "Vitamin E",
+          "unitName": "mg"
+        },
+        "amount": 1.58
+      }
+    ],
+    "foodPortions": [
+      {
+        "id": -1601,
+        "amount": 1.0,
+        "gramWeight": 100.0,
+        "modifier": "default",
+        "portionDescription": "100 g",
+        "sequenceNumber": 1,
+        "measureUnit": {
+          "id": -160101,
+          "name": "g",
+          "abbreviation": "g"
+        }
+      }
+    ]
+  },
+  {
+    "fdcId": -17,
+    "description": "Ei, Columbus Omega-3, Gewichtsklasse M",
+    "foodClass": "Custom",
+    "foodCategory": {
+      "description": "Dairy and Egg Products",
+      "code": "9999",
+      "id": -1
+    },
+    "foodNutrients": [
+      {
+        "nutrient": {
+          "id": 1008,
+          "number": "208",
+          "name": "Energy",
+          "unitName": "kcal"
+        },
+        "amount": 153.0
+      },
+      {
+        "nutrient": {
+          "id": 1003,
+          "number": "203",
+          "name": "Protein",
+          "unitName": "g"
+        },
+        "amount": 13.0
+      },
+      {
+        "nutrient": {
+          "id": 1004,
+          "number": "204",
+          "name": "Total lipid (fat)",
+          "unitName": "g"
+        },
+        "amount": 11.0
+      },
+      {
+        "nutrient": {
+          "id": 1258,
+          "number": "606",
+          "name": "Fatty acids, total saturated",
+          "unitName": "g"
+        },
+        "amount": 3.3
+      },
+      {
+        "nutrient": {
+          "id": 1292,
+          "number": "645",
+          "name": "Fatty acids, total monounsaturated",
+          "unitName": "g"
+        },
+        "amount": 4.2
+      },
+      {
+        "nutrient": {
+          "id": 1293,
+          "number": "646",
+          "name": "Fatty acids, total polyunsaturated",
+          "unitName": "g"
+        },
+        "amount": 1.4
+      },
+      {
+        "nutrient": {
+          "id": 1005,
+          "number": "205",
+          "name": "Carbohydrate, by difference",
+          "unitName": "g"
+        },
+        "amount": 0.6
+      },
+      {
+        "nutrient": {
+          "id": 2000,
+          "number": "269",
+          "name": "Sugars, total",
+          "unitName": "g"
+        },
+        "amount": 0.5
+      },
+      {
+        "nutrient": {
+          "id": 1093,
+          "number": "307",
+          "name": "Sodium, Na",
+          "unitName": "mg"
+        },
+        "amount": 320.0
+      },
+      {
+        "nutrient": {
+          "id": 1158,
+          "number": "851",
+          "name": "PUFA 18:3 n-3 (ALA)",
+          "unitName": "g"
+        },
+        "amount": 0.04
+      },
+      {
+        "nutrient": {
+          "id": 1278,
+          "number": "629",
+          "name": "PUFA 20:5 (EPA)",
+          "unitName": "g"
+        },
+        "amount": 0.009
+      },
+      {
+        "nutrient": {
+          "id": 1279,
+          "number": "631",
+          "name": "PUFA 22:6 (DHA)",
+          "unitName": "g"
+        },
+        "amount": 0.13
+      },
+      {
+        "nutrient": {
+          "id": 1087,
+          "number": "301",
+          "name": "Calcium, Ca",
+          "unitName": "mg"
+        },
+        "amount": 56.0
+      },
+      {
+        "nutrient": {
+          "id": 1089,
+          "number": "303",
+          "name": "Iron, Fe",
+          "unitName": "mg"
+        },
+        "amount": 1.8
+      },
+      {
+        "nutrient": {
+          "id": 1090,
+          "number": "304",
+          "name": "Magnesium, Mg",
+          "unitName": "mg"
+        },
+        "amount": 12.0
+      },
+      {
+        "nutrient": {
+          "id": 1091,
+          "number": "305",
+          "name": "Phosphorus, P",
+          "unitName": "mg"
+        },
+        "amount": 190.0
+      },
+      {
+        "nutrient": {
+          "id": 1092,
+          "number": "306",
+          "name": "Potassium, K",
+          "unitName": "mg"
+        },
+        "amount": 126.0
+      },
+      {
+        "nutrient": {
+          "id": 1095,
+          "number": "309",
+          "name": "Zinc, Zn",
+          "unitName": "mg"
+        },
+        "amount": 1.3
+      },
+      {
+        "nutrient": {
+          "id": 1098,
+          "number": "312",
+          "name": "Copper, Cu",
+          "unitName": "mg"
+        },
+        "amount": 0.07
+      },
+      {
+        "nutrient": {
+          "id": 1101,
+          "number": "315",
+          "name": "Manganese, Mn",
+          "unitName": "mg"
+        },
+        "amount": 0.03
+      },
+      {
+        "nutrient": {
+          "id": 1103,
+          "number": "317",
+          "name": "Selenium, Se",
+          "unitName": "µg"
+        },
+        "amount": 28.0
+      },
+      {
+        "nutrient": {
+          "id": 1100,
+          "number": "314",
+          "name": "Iodine, I",
+          "unitName": "µg"
+        },
+        "amount": 25.0
+      },
+      {
+        "nutrient": {
+          "id": 1106,
+          "number": "320",
+          "name": "Vitamin A, RAE",
+          "unitName": "µg"
+        },
+        "amount": 180.0
+      },
+      {
+        "nutrient": {
+          "id": 1107,
+          "number": "321",
+          "name": "Carotene, beta",
+          "unitName": "µg"
+        },
+        "amount": 50.0
+      },
+      {
+        "nutrient": {
+          "id": 1109,
+          "number": "323",
+          "name": "Vitamin E",
+          "unitName": "mg"
+        },
+        "amount": 1.2
+      },
+      {
+        "nutrient": {
+          "id": 1190,
+          "number": "435",
+          "name": "Folate, DFE",
+          "unitName": "µg"
+        },
+        "amount": 45.0
+      },
+      {
+        "nutrient": {
+          "id": 1165,
+          "number": "404",
+          "name": "Thiamin (B1)",
+          "unitName": "mg"
+        },
+        "amount": 0.04
+      },
+      {
+        "nutrient": {
+          "id": 1166,
+          "number": "405",
+          "name": "Riboflavin (B2)",
+          "unitName": "mg"
+        },
+        "amount": 0.45
+      },
+      {
+        "nutrient": {
+          "id": 1167,
+          "number": "406",
+          "name": "Niacin (B3 equivalent)",
+          "unitName": "mg"
+        },
+        "amount": 0.07
+      },
+      {
+        "nutrient": {
+          "id": 1170,
+          "number": "410",
+          "name": "Pantothenic acid (B5)",
+          "unitName": "mg"
+        },
+        "amount": 1.4
+      },
+      {
+        "nutrient": {
+          "id": 1175,
+          "number": "415",
+          "name": "Vitamin B-6",
+          "unitName": "mg"
+        },
+        "amount": 0.1
+      },
+      {
+        "nutrient": {
+          "id": 1176,
+          "number": "416",
+          "name": "Biotin (B7)",
+          "unitName": "µg"
+        },
+        "amount": 25.0
+      },
+      {
+        "nutrient": {
+          "id": 1178,
+          "number": "418",
+          "name": "Vitamin B-12",
+          "unitName": "µg"
+        },
+        "amount": 1.8
+      },
+      {
+        "nutrient": {
+          "id": 1185,
+          "number": "430",
+          "name": "Vitamin K",
+          "unitName": "µg"
+        },
+        "amount": 0.3
+      },
+      {
+        "nutrient": {
+          "id": 1114,
+          "number": "324",
+          "name": "Vitamin D",
+          "unitName": "µg"
+        },
+        "amount": 2.9
+      },
+      {
+        "nutrient": {
+          "id": 1102,
+          "number": "316",
+          "name": "Molybdenum, Mo",
+          "unitName": "µg"
+        },
+        "amount": 5.0
+      },
+      {
+        "nutrient": {
+          "id": 1253,
+          "number": "601",
+          "name": "Cholesterol",
+          "unitName": "mg"
+        },
+        "amount": 370.0
+      }
+    ],
+    "foodPortions": [
+      {
+        "id": -1701,
+        "amount": 1.0,
+        "gramWeight": 63.0,
+        "modifier": "medium egg",
+        "portionDescription": "1 egg (weight class M)",
+        "sequenceNumber": 1,
+        "measureUnit": {
+          "id": -170101,
+          "name": "g",
+          "abbreviation": "g"
+        }
+      }
+    ]
+  },
+  {
+    "fdcId": -19,
+    "description": "Iodine (100 µg, pure)",
+    "foodClass": "Custom",
+    "foodCategory": {
+      "description": "Supplements",
+      "code": "9996",
+      "id": -19
+    },
+    "foodNutrients": [
+      {
+        "nutrient": {
+          "id": 1100,
+          "number": "314",
+          "name": "Iodine, I",
+          "unitName": "µg"
+        },
+        "amount": 100.0
+      }
+    ],
+    "foodPortions": [
+      {
+        "id": -1901,
+        "amount": 1.0,
+        "gramWeight": 0.1,
+        "modifier": "unit",
+        "portionDescription": "1 tablet/drop (100 µg iodine)",
+        "sequenceNumber": 1,
+        "measureUnit": {
+          "id": -190101,
+          "name": "unit",
+          "abbreviation": "unit"
+        }
+      }
+    ]
+  },
+  {
+    "fdcId": -3919,
+    "description": "Hähnchenbrustfilet, roh, ohne Haut (Deutschland)",
+    "foodClass": "Custom",
+    "foodCategory": {
+      "description": "Poultry Products",
+      "code": "9999",
+      "id": -1
+    },
+    "foodNutrients": [
+      {
+        "nutrient": {
+          "id": 1008,
+          "number": "208",
+          "name": "Energy",
+          "unitName": "kcal"
+        },
+        "amount": 107.0
+      },
+      {
+        "nutrient": {
+          "id": 1003,
+          "number": "203",
+          "name": "Protein",
+          "unitName": "g"
+        },
+        "amount": 24.0
+      },
+      {
+        "nutrient": {
+          "id": 1004,
+          "number": "204",
+          "name": "Total lipid (fat)",
+          "unitName": "g"
+        },
+        "amount": 0.8
+      },
+      {
+        "nutrient": {
+          "id": 1258,
+          "number": "606",
+          "name": "Fatty acids, total saturated",
+          "unitName": "g"
+        },
+        "amount": 0.56
+      },
+      {
+        "nutrient": {
+          "id": 1292,
+          "number": "645",
+          "name": "Fatty acids, total monounsaturated",
+          "unitName": "g"
+        },
+        "amount": 0.69
+      },
+      {
+        "nutrient": {
+          "id": 1293,
+          "number": "646",
+          "name": "Fatty acids, total polyunsaturated",
+          "unitName": "g"
+        },
+        "amount": 0.42
+      },
+      {
+        "nutrient": {
+          "id": 1005,
+          "number": "205",
+          "name": "Carbohydrate, by difference",
+          "unitName": "g"
+        },
+        "amount": 0.0
+      },
+      {
+        "nutrient": {
+          "id": 2000,
+          "number": "269",
+          "name": "Sugars, total",
+          "unitName": "g"
+        },
+        "amount": 0.0
+      },
+      {
+        "nutrient": {
+          "id": 1093,
+          "number": "307",
+          "name": "Sodium, Na",
+          "unitName": "mg"
+        },
+        "amount": 52.0
+      },
+      {
+        "nutrient": {
+          "id": 1158,
+          "number": "851",
+          "name": "PUFA 18:3 n-3 (ALA)",
+          "unitName": "g"
+        },
+        "amount": 0.013
+      },
+      {
+        "nutrient": {
+          "id": 1278,
+          "number": "629",
+          "name": "PUFA 20:5 (EPA)",
+          "unitName": "g"
+        },
+        "amount": 0.004
+      },
+      {
+        "nutrient": {
+          "id": 1279,
+          "number": "631",
+          "name": "PUFA 22:6 (DHA)",
+          "unitName": "g"
+        },
+        "amount": 0.004
+      },
+      {
+        "nutrient": {
+          "id": 1087,
+          "number": "301",
+          "name": "Calcium, Ca",
+          "unitName": "mg"
+        },
+        "amount": 14.0
+      },
+      {
+        "nutrient": {
+          "id": 1089,
+          "number": "303",
+          "name": "Iron, Fe",
+          "unitName": "mg"
+        },
+        "amount": 0.45
+      },
+      {
+        "nutrient": {
+          "id": 1090,
+          "number": "304",
+          "name": "Magnesium, Mg",
+          "unitName": "mg"
+        },
+        "amount": 34.0
+      },
+      {
+        "nutrient": {
+          "id": 1091,
+          "number": "305",
+          "name": "Phosphorus, P",
+          "unitName": "mg"
+        },
+        "amount": 212.0
+      },
+      {
+        "nutrient": {
+          "id": 1092,
+          "number": "306",
+          "name": "Potassium, K",
+          "unitName": "mg"
+        },
+        "amount": 333.0
+      },
+      {
+        "nutrient": {
+          "id": 1095,
+          "number": "309",
+          "name": "Zinc, Zn",
+          "unitName": "mg"
+        },
+        "amount": 0.9
+      },
+      {
+        "nutrient": {
+          "id": 1098,
+          "number": "312",
+          "name": "Copper, Cu",
+          "unitName": "mg"
+        },
+        "amount": 0.04
+      },
+      {
+        "nutrient": {
+          "id": 1101,
+          "number": "315",
+          "name": "Manganese, Mn",
+          "unitName": "mg"
+        },
+        "amount": 0.01
+      },
+      {
+        "nutrient": {
+          "id": 1103,
+          "number": "317",
+          "name": "Selenium, Se",
+          "unitName": "µg"
+        },
+        "amount": 28.0
+      },
+      {
+        "nutrient": {
+          "id": 1100,
+          "number": "314",
+          "name": "Iodine, I",
+          "unitName": "µg"
+        },
+        "amount": 8.0
+      },
+      {
+        "nutrient": {
+          "id": 1106,
+          "number": "320",
+          "name": "Vitamin A, RAE",
+          "unitName": "µg"
+        },
+        "amount": 9.1
+      },
+      {
+        "nutrient": {
+          "id": 1107,
+          "number": "321",
+          "name": "Carotene, beta",
+          "unitName": "µg"
+        },
+        "amount": 0.0
+      },
+      {
+        "nutrient": {
+          "id": 1109,
+          "number": "323",
+          "name": "Vitamin E",
+          "unitName": "mg"
+        },
+        "amount": 0.56
+      },
+      {
+        "nutrient": {
+          "id": 1190,
+          "number": "435",
+          "name": "Folate, DFE",
+          "unitName": "µg"
+        },
+        "amount": 9.1
+      },
+      {
+        "nutrient": {
+          "id": 1165,
+          "number": "404",
+          "name": "Thiamin (B1)",
+          "unitName": "mg"
+        },
+        "amount": 0.09
+      },
+      {
+        "nutrient": {
+          "id": 1166,
+          "number": "405",
+          "name": "Riboflavin (B2)",
+          "unitName": "mg"
+        },
+        "amount": 0.18
+      },
+      {
+        "nutrient": {
+          "id": 1167,
+          "number": "406",
+          "name": "Niacin (B3 equivalent)",
+          "unitName": "mg"
+        },
+        "amount": 9.7
+      },
+      {
+        "nutrient": {
+          "id": 1170,
+          "number": "410",
+          "name": "Pantothenic acid (B5)",
+          "unitName": "mg"
+        },
+        "amount": 1.5
+      },
+      {
+        "nutrient": {
+          "id": 1175,
+          "number": "415",
+          "name": "Vitamin B-6",
+          "unitName": "mg"
+        },
+        "amount": 0.81
+      },
+      {
+        "nutrient": {
+          "id": 1176,
+          "number": "416",
+          "name": "Biotin (B7)",
+          "unitName": "µg"
+        },
+        "amount": 4.0
+      },
+      {
+        "nutrient": {
+          "id": 1178,
+          "number": "418",
+          "name": "Vitamin B-12",
+          "unitName": "µg"
+        },
+        "amount": 0.21
+      },
+      {
+        "nutrient": {
+          "id": 1185,
+          "number": "430",
+          "name": "Vitamin K",
+          "unitName": "µg"
+        },
+        "amount": 0.0
+      },
+      {
+        "nutrient": {
+          "id": 1114,
+          "number": "324",
+          "name": "Vitamin D",
+          "unitName": "µg"
+        },
+        "amount": 0.1
+      },
+      {
+        "nutrient": {
+          "id": 1102,
+          "number": "316",
+          "name": "Molybdenum, Mo",
+          "unitName": "µg"
+        },
+        "amount": 4.0
+      },
+      {
+        "nutrient": {
+          "id": 1253,
+          "number": "601",
+          "name": "Cholesterol",
+          "unitName": "mg"
+        },
+        "amount": 60.0
+      },
+      {
+        "nutrient": {
+          "id": 1180,
+          "number": "421",
+          "name": "Choline",
+          "unitName": "mg"
+        },
+        "amount": 82.0
+      }
+    ],
+    "foodPortions": [
+      {
+        "id": -1901,
+        "amount": 1.0,
+        "gramWeight": 100.0,
+        "modifier": "raw, skinless",
+        "portionDescription": "100 g",
+        "sequenceNumber": 1,
+        "measureUnit": {
+          "id": -190101,
+          "name": "g",
+          "abbreviation": "g"
+        }
+      }
+    ]
   }
- ,{
-  "fdcId": -16,
-  "description": "Geröstete Paprika",
-  "foodClass": "Custom",
-  "foodCategory": {
-    "description": "Vegetables and Vegetable Products",
-    "code": "9999",
-    "id": -1
-  },
-  "foodNutrients": [
-    { "nutrient": { "id": 1008, "number": "208", "name": "Energy", "unitName": "kcal" }, "amount": 54.0 },
-    { "nutrient": { "id": 1003, "number": "203", "name": "Protein", "unitName": "g" }, "amount": 0.8 },
-    { "nutrient": { "id": 1004, "number": "204", "name": "Total lipid (fat)", "unitName": "g" }, "amount": 0.6 },
-    { "nutrient": { "id": 1005, "number": "205", "name": "Carbohydrate, by difference", "unitName": "g" }, "amount": 11.0 },
-    { "nutrient": { "id": 2000, "number": "269", "name": "Sugars, total", "unitName": "g" }, "amount": 8.9 },
-    { "nutrient": { "id": 1079, "number": "291", "name": "Fiber, total dietary", "unitName": "g" }, "amount": 1.0 },
-    { "nutrient": { "id": 1093, "number": "307", "name": "Sodium, Na", "unitName": "mg" }, "amount": 800.0 },
-
-    { "nutrient": { "id": 1087, "number": "301", "name": "Calcium, Ca", "unitName": "mg" }, "amount": 10.0 },
-    { "nutrient": { "id": 1089, "number": "303", "name": "Iron, Fe", "unitName": "mg" }, "amount": 0.4 },
-    { "nutrient": { "id": 1090, "number": "304", "name": "Magnesium, Mg", "unitName": "mg" }, "amount": 12.0 },
-    { "nutrient": { "id": 1091, "number": "305", "name": "Phosphorus, P", "unitName": "mg" }, "amount": 24.0 },
-    { "nutrient": { "id": 1092, "number": "306", "name": "Potassium, K", "unitName": "mg" }, "amount": 208.0 },
-    { "nutrient": { "id": 1095, "number": "309", "name": "Zinc, Zn", "unitName": "mg" }, "amount": 0.2 },
-    { "nutrient": { "id": 1098, "number": "312", "name": "Copper, Cu", "unitName": "mg" }, "amount": 0.08 },
-    { "nutrient": { "id": 1103, "number": "317", "name": "Selenium, Se", "unitName": "µg" }, "amount": 0.1 },
-    { "nutrient": { "id": 1101, "number": "315", "name": "Manganese, Mn", "unitName": "mg" }, "amount": 0.09 },
-    
-    { "nutrient": { "id": 1165, "number": "404", "name": "Thiamin", "unitName": "mg" }, "amount": 0.05 },
-    { "nutrient": { "id": 1166, "number": "405", "name": "Riboflavin", "unitName": "mg" }, "amount": 0.08 },
-    { "nutrient": { "id": 1167, "number": "406", "name": "Niacin", "unitName": "mg" }, "amount": 0.95 },
-    { "nutrient": { "id": 1175, "number": "415", "name": "Vitamin B-6", "unitName": "mg" }, "amount": 0.29 },
-    { "nutrient": { "id": 1190, "number": "435", "name": "Folate, DFE", "unitName": "µg" }, "amount": 20.0 },
-    { "nutrient": { "id": 1162, "number": "401", "name": "Vitamin C", "unitName": "mg" }, "amount": 84.0 },
-    { "nutrient": { "id": 1106, "number": "320", "name": "Vitamin A", "unitName": "µg" }, "amount": 157.0 },
-    { "nutrient": { "id": 1109, "number": "323", "name": "Vitamin E", "unitName": "mg" }, "amount": 1.58 }
-  ],
-  "foodPortions": [
-    {
-      "id": -1601,
-      "amount": 1.0,
-      "gramWeight": 100.0,
-      "modifier": "default",
-      "portionDescription": "100 g",
-      "sequenceNumber": 1,
-      "measureUnit": {
-        "id": -160101,
-        "name": "g",
-        "abbreviation": "g"
-      }
-    }
-  ]
-},
-{
-  "fdcId": -17,
-  "description": "Ei, Columbus Omega-3, Gewichtsklasse M",
-  "foodClass": "Custom",
-  "foodCategory": {
-    "description": "Dairy and Egg Products",
-    "code": "9999",
-    "id": -1
-  },
-  "foodNutrients": [
-    { "nutrient": { "id": 1008, "number": "208", "name": "Energy", "unitName": "kcal" }, "amount": 153.0 },
-    { "nutrient": { "id": 1003, "number": "203", "name": "Protein", "unitName": "g" }, "amount": 13.0 },
-    { "nutrient": { "id": 1004, "number": "204", "name": "Total lipid (fat)", "unitName": "g" }, "amount": 11.0 },
-    { "nutrient": { "id": 1258, "number": "606", "name": "Fatty acids, total saturated", "unitName": "g" }, "amount": 3.3 },
-    { "nutrient": { "id": 1292, "number": "645", "name": "Fatty acids, total monounsaturated", "unitName": "g" }, "amount": 4.2 },
-    { "nutrient": { "id": 1293, "number": "646", "name": "Fatty acids, total polyunsaturated", "unitName": "g" }, "amount": 1.4 },
-
-    { "nutrient": { "id": 1005, "number": "205", "name": "Carbohydrate, by difference", "unitName": "g" }, "amount": 0.6 },
-    { "nutrient": { "id": 2000, "number": "269", "name": "Sugars, total", "unitName": "g" }, "amount": 0.5 },
-    { "nutrient": { "id": 1093, "number": "307", "name": "Sodium, Na", "unitName": "mg" }, "amount": 320.0 },
-
-    { "nutrient": { "id": 1158, "number": "851", "name": "PUFA 18:3 n-3 (ALA)", "unitName": "g" }, "amount": 0.04 },
-    { "nutrient": { "id": 1278, "number": "629", "name": "PUFA 20:5 (EPA)", "unitName": "g" }, "amount": 0.009 },
-    { "nutrient": { "id": 1279, "number": "631", "name": "PUFA 22:6 (DHA)", "unitName": "g" }, "amount": 0.13 },
-
-    { "nutrient": { "id": 1087, "number": "301", "name": "Calcium, Ca", "unitName": "mg" }, "amount": 56.0 },
-    { "nutrient": { "id": 1089, "number": "303", "name": "Iron, Fe", "unitName": "mg" }, "amount": 1.8 },
-    { "nutrient": { "id": 1090, "number": "304", "name": "Magnesium, Mg", "unitName": "mg" }, "amount": 12.0 },
-    { "nutrient": { "id": 1091, "number": "305", "name": "Phosphorus, P", "unitName": "mg" }, "amount": 190.0 },
-    { "nutrient": { "id": 1092, "number": "306", "name": "Potassium, K", "unitName": "mg" }, "amount": 126.0 },
-    { "nutrient": { "id": 1095, "number": "309", "name": "Zinc, Zn", "unitName": "mg" }, "amount": 1.3 },
-    { "nutrient": { "id": 1098, "number": "312", "name": "Copper, Cu", "unitName": "mg" }, "amount": 0.07 },
-    { "nutrient": { "id": 1101, "number": "315", "name": "Manganese, Mn", "unitName": "mg" }, "amount": 0.03 },
-    { "nutrient": { "id": 1103, "number": "317", "name": "Selenium, Se", "unitName": "µg" }, "amount": 28.0 },
-    { "nutrient": { "id": 1100, "number": "314", "name": "Iodine, I", "unitName": "µg" }, "amount": 25.0 },
-
-    { "nutrient": { "id": 1106, "number": "320", "name": "Vitamin A, RAE", "unitName": "µg" }, "amount": 180.0 },
-    { "nutrient": { "id": 1107, "number": "321", "name": "Carotene, beta", "unitName": "µg" }, "amount": 50.0 },
-    { "nutrient": { "id": 1109, "number": "323", "name": "Vitamin E", "unitName": "mg" }, "amount": 1.2 },
-    { "nutrient": { "id": 1190, "number": "435", "name": "Folate, DFE", "unitName": "µg" }, "amount": 45.0 },
-    { "nutrient": { "id": 1165, "number": "404", "name": "Thiamin (B1)", "unitName": "mg" }, "amount": 0.04 },
-    { "nutrient": { "id": 1166, "number": "405", "name": "Riboflavin (B2)", "unitName": "mg" }, "amount": 0.45 },
-    { "nutrient": { "id": 1167, "number": "406", "name": "Niacin (B3 equivalent)", "unitName": "mg" }, "amount": 0.07 },
-    { "nutrient": { "id": 1170, "number": "410", "name": "Pantothenic acid (B5)", "unitName": "mg" }, "amount": 1.4 },
-    { "nutrient": { "id": 1175, "number": "415", "name": "Vitamin B-6", "unitName": "mg" }, "amount": 0.1 },
-    { "nutrient": { "id": 1176, "number": "416", "name": "Biotin (B7)", "unitName": "µg" }, "amount": 25.0 },
-    { "nutrient": { "id": 1178, "number": "418", "name": "Vitamin B-12", "unitName": "µg" }, "amount": 1.8 },
-    { "nutrient": { "id": 1185, "number": "430", "name": "Vitamin K", "unitName": "µg" }, "amount": 0.3 },
-    { "nutrient": { "id": 1114, "number": "324", "name": "Vitamin D", "unitName": "µg" }, "amount": 2.9 }
-  ],
-  "foodPortions": [
-    {
-      "id": -1701,
-      "amount": 1.0,
-      "gramWeight": 63.0,
-      "modifier": "medium egg",
-      "portionDescription": "1 egg (weight class M)",
-      "sequenceNumber": 1,
-      "measureUnit": {
-        "id": -170101,
-        "name": "g",
-        "abbreviation": "g"
-      }
-    }
-  ]
-},{
-  "fdcId": -19,
-  "description": "Iodine (100 µg, pure)",
-  "foodClass": "Custom",
-  "foodCategory": {
-    "description": "Supplements",
-    "code": "9996",
-    "id": -19
-  },
-  "foodNutrients": [
-    {
-      "nutrient": { "id": 1100, "number": "314", "name": "Iodine, I", "unitName": "µg" },
-      "amount": 100.0
-    }
-  ],
-  "foodPortions": [
-    {
-      "id": -1901,
-      "amount": 1.0,
-      "gramWeight": 0.1,
-      "modifier": "unit",
-      "portionDescription": "1 tablet/drop (100 µg iodine)",
-      "sequenceNumber": 1,
-      "measureUnit": {
-        "id": -190101,
-        "name": "unit",
-        "abbreviation": "unit"
-      }
-    }
-  ]
-}
- 
 ]

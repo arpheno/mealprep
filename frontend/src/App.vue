@@ -3,6 +3,7 @@
     <nav>
       <router-link to="/create-meal-component">Create Meal Component</router-link>
       <router-link to="/create-meal-plan">Create Meal Plan</router-link>
+      <router-link to="/meal-plans">Meal Plans</router-link>
       <button @click="toggleDarkMode" class="theme-toggle">
         {{ isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode' }}
       </button>

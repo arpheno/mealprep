@@ -159,3 +159,16 @@ food-editor:
 migrate: ## Create Django migrations in the web container
 	@echo "Making Django migrations..."
 	docker-compose exec web python manage.py migrate
+
+# ChatGPT Foods Management
+export-chatgpt-foods: ## Export all ChatGPT-generated foods to JSON for version control
+	@echo "Ensuring web service is running..."
+	docker-compose up -d web
+	@echo "Exporting ChatGPT foods to data/chatgpt_foods.json..."
+	docker-compose exec web python manage.py export_chatgpt_foods --pretty --include-metadata $(ARGS)
+
+import-chatgpt-foods: ## Import ChatGPT foods from JSON file
+	@echo "Ensuring web service is running..."
+	docker-compose up -d web
+	@echo "Importing ChatGPT foods from data/chatgpt_foods.json..."
+	docker-compose exec web python manage.py import_chatgpt_foods data/chatgpt_foods.json $(ARGS)

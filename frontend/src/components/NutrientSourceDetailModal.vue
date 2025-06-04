@@ -291,7 +291,7 @@ const sankeyOption = computed(() => {
       }
 
       // Add ingredient node (uniquely named) if not present
-      const uniqueIngredientNodeName = `${source.ingredientName} (from ${source.componentName.substring(0,10)}${source.componentName.length > 10 ? '...' : ''})`;
+      const uniqueIngredientNodeName = source.ingredientName;
       if (!nodeSet.has(uniqueIngredientNodeName)) {
           nodes.push({ name: uniqueIngredientNodeName });
           nodeSet.add(uniqueIngredientNodeName);
@@ -312,7 +312,7 @@ const sankeyOption = computed(() => {
     // Create links: Meal Component -> Ingredient
     processedSources.value.forEach(source => {
       const componentNodeName = source.componentName;
-      const uniqueIngredientNodeName = `${source.ingredientName} (from ${source.componentName.substring(0,10)}${source.componentName.length > 10 ? '...' : ''})`;
+      const uniqueIngredientNodeName = source.ingredientName;
       if (source.amount > 0.001) {
         links.push({
           source: componentNodeName,

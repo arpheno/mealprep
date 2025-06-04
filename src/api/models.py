@@ -70,8 +70,8 @@ class Gender(models.TextChoices):
 
 class MealComponentFrequency(models.TextChoices):
     PER_MEAL_BOX = 'PER_BOX', 'Per Meal Box'
-    PER_DAY = 'PER_DAY', 'Per Day'
-    PER_WEEK = 'PER_WEEK', 'Per Week'
+    DAILY_TOTAL = 'DAILY', 'Daily Total'
+    WEEKLY_TOTAL = 'WEEKLY', 'Weekly Total'
 
 # --- Django Models --- 
 

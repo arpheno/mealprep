@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 // import HomeView from '../views/HomeView.vue'; // Commented out
 import CreateMealComponentPage from '../views/CreateMealComponentPage.vue';
 import CreateMealPlanPage from '../views/CreateMealPlanPage.vue';
+import MealPlanListPage from '../views/MealPlanListPage.vue';
 
 const routes = [
   // { // Commented out Home route
@@ -28,6 +29,11 @@ const routes = [
     path: '/create-meal-plan',
     name: 'CreateMealPlan',
     component: CreateMealPlanPage
+  },
+  {
+    path: '/meal-plans',
+    name: 'MealPlanList',
+    component: MealPlanListPage
   }
 ];
 

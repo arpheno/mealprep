@@ -11,6 +11,8 @@ from .views import (
     IngredientNutrientLinkViewSet,
     IngredientUsageViewSet,
     DietaryReferenceValueViewSet,
+    AIIngredientCreationAPIView,
+    validate_ingredient_description,
 )
 
 router = DefaultRouter()
@@ -27,5 +29,7 @@ router.register(r'dietaryreferencevalues', DietaryReferenceValueViewSet)
 
 urlpatterns = [
     path('ingredients/search/', IngredientSearchAPIView.as_view(), name='ingredient-search'),
+    path('ingredients/ai-create/', AIIngredientCreationAPIView.as_view(), name='ai-ingredient-create'),
+    path('ingredients/validate/', validate_ingredient_description, name='validate-ingredient-description'),
     path('', include(router.urls)),
 ] 

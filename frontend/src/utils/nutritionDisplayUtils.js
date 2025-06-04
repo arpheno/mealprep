@@ -40,6 +40,22 @@ export const getPlanNutrientBarStyle = (nutrientData, planDurationDays) => {
     const NEUTRAL_BACKGROUND_HSLA = `hsla(0, 0%, 25%, ${MUTED_ALPHA - 0.05})`;
     const NEUTRAL_TEXT_COLOR = 'var(--color-text-secondary, #b0b0b0)';
 
+    // Special case: Nutrient has RDA but current intake is 0 (completely unsatisfied)
+    if (totalForDuration === 0 && rdaForDuration && rdaForDuration > 0) {
+        // Faint glassy red gradient to indicate missing essential nutrient
+        const faintRedGradient = `linear-gradient(135deg, 
+            hsla(0, 35%, 75%, 0.15) 0%, 
+            hsla(0, 40%, 70%, 0.25) 30%, 
+            hsla(0, 30%, 80%, 0.1) 70%, 
+            transparent 100%)`;
+        return {
+            background: faintRedGradient,
+            color: NEUTRAL_TEXT_COLOR,
+            borderLeft: '3px solid hsla(0, 50%, 60%, 0.3)', // Subtle red accent border
+            transition: 'all 0.3s ease'
+        };
+    }
+
     if (totalForDuration === 0) {
         return {
             background: NEUTRAL_BACKGROUND_HSLA,
